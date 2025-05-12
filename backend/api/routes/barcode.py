@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Path, Query, Depends
 from typing import Optional, List
 from datetime import datetime
+import logging
 
 from schemas.food import FoodProduct
 from schemas.user import ScanHistory
@@ -9,6 +10,7 @@ from services.perplexity import perplexity_service
 from services.user_storage import user_storage_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 @router.get("/product/{barcode}", response_model=FoodProduct)
 async def get_product_by_barcode(
@@ -31,22 +33,30 @@ async def get_product_additives(
     """
     Get additives analysis for a product
     """
-    # First get the product info
-    product = await openfoodfacts_service.get_product_by_barcode(barcode)
-    
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    
-    # Then analyze additives
-    additives = await perplexity_service.analyze_additives(product)
-    
-    # Update product with additives
-    product.additives = additives
-    
-    return {
-        "additives": additives,
-        "product": product
-    }
+    try:
+        # First get the product info
+        product = await openfoodfacts_service.get_product_by_barcode(barcode)
+        
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Then analyze additives
+        additives = await perplexity_service.analyze_additives(product)
+        
+        # Update product with additives
+        product.additives = additives
+        
+        return {
+            "additives": additives,
+            "product": product
+        }
+    except HTTPException as e:
+        # Re-raise HTTP exceptions
+        raise e
+    except Exception as e:
+        # Log the error and return a 500 response
+        logger.error(f"Error processing additives: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error analyzing product additives")
 
 @router.post("/scan/{barcode}")
 async def scan_product(

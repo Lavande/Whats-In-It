@@ -25,7 +25,6 @@ class OpenFoodFactsService:
         url = f"{self.base_url}/product/{barcode}"
         
         try:
-            # 添加自定义User-Agent头
             headers = {
                 "User-Agent": self.user_agent
             }
