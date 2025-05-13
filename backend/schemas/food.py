@@ -12,6 +12,7 @@ class Additive(BaseModel):
 
 
 class NutritionFacts(BaseModel):
+    per_quantity: str = "serving"  # e.g., "100g", "100ml", "serving"
     energy_kj: Optional[float] = None
     energy_kcal: Optional[float] = None
     fat: Optional[float] = None
@@ -32,8 +33,6 @@ class FoodProduct(BaseModel):
     ingredients_text: Optional[str] = None
     ingredients_list: Optional[List[str]] = None
     nutrition_facts: Optional[NutritionFacts] = None
-    additives: Optional[List[Additive]] = None
-    nutriscore: Optional[str] = None  # A, B, C, D, E
 
 
 class DietCompatibility(BaseModel):
@@ -48,4 +47,33 @@ class DietAnalysisResult(BaseModel):
     compatibility: List[DietCompatibility] = []
     overall_recommendation: str  # Recommended, Caution, Not Recommended
     recommendation_reason: str
-    alternatives: Optional[List[str]] = None 
+    alternatives: Optional[List[str]] = None
+
+
+class NutritionComponent(BaseModel):
+    name: str
+    value: str  # e.g., "10g/100g"
+    health_rating: str  # "healthy", "moderate", "unhealthy"
+    reason: str
+    
+    
+class KeyIngredient(BaseModel):
+    name: str
+    description: str
+    health_impact: str
+    
+    
+class UserHealthProfile(BaseModel):
+    diet_type: Optional[List[str]] = []  # keto, vegan, low-carb, etc.
+    allergies: Optional[List[str]] = []
+    health_conditions: Optional[List[str]] = []
+
+
+class ProductAnalysis(BaseModel):
+    health_score: int = Field(..., ge=0, le=100)  # Overall health score (0-100)
+    recommendation: str  # "recommended", "not recommended"
+    recommendation_reason: str
+    nutrition_components: List[NutritionComponent] = []
+    key_ingredients: List[KeyIngredient] = []
+    additives: List[Additive] = []
+    sources: Optional[List[str]] = None  # Source references 

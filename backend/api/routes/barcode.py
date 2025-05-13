@@ -43,9 +43,6 @@ async def get_product_additives(
         # Then analyze additives
         additives = await perplexity_service.analyze_additives(product)
         
-        # Update product with additives
-        product.additives = additives
-        
         return {
             "additives": additives,
             "product": product
@@ -78,7 +75,7 @@ async def scan_product(
         raise HTTPException(status_code=404, detail="Product not found")
     
     # Analyze additives
-    product.additives = await perplexity_service.analyze_additives(product)
+    additives = await perplexity_service.analyze_additives(product)
     
     # Get user preferences
     user_prefs = user_storage_service.get_user_preferences()

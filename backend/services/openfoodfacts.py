@@ -56,7 +56,14 @@ class OpenFoodFactsService:
         Parse the OpenFoodFacts API response into our FoodProduct model
         """
         # Extract nutrition facts
+        per_quantity = "serving"  # Default value
+        
+        # Extract the nutrition_data_per field from the API response
+        if "nutrition_data_prepared_per" in data and data["nutrition_data_prepared_per"]:
+            per_quantity = data["nutrition_data_prepared_per"]
+                
         nutrition = NutritionFacts(
+            per_quantity=per_quantity,
             energy_kj=self._extract_nutrient(data, "energy-kj"),
             energy_kcal=self._extract_nutrient(data, "energy-kcal") or self._extract_nutrient(data, "energy"),
             fat=self._extract_nutrient(data, "fat"),
@@ -83,9 +90,7 @@ class OpenFoodFactsService:
             image_url=data.get("image_url", None),
             ingredients_text=ingredients_text,
             ingredients_list=ingredients_list,
-            nutrition_facts=nutrition,
-            additives=None,  # Will be filled by the additive analysis service
-            nutriscore=data.get("nutriscore_grade", None)
+            nutrition_facts=nutrition
         )
         
         return product
