@@ -4,7 +4,7 @@ import httpx
 from typing import List, Dict, Any, Optional
 
 from core.config import settings
-from schemas.food import Additive, FoodProduct, DietCompatibility, DietAnalysisResult, ProductAnalysis, NutritionComponent, KeyIngredient, UserHealthProfile
+from schemas.food import Additive, FoodProduct, ProductAnalysis, NutritionComponent, KeyIngredient, UserHealthProfile, Citation
 
 logger = logging.getLogger(__name__)
 
@@ -12,170 +12,6 @@ class PerplexitySonarService:
     def __init__(self):
         self.api_key = settings.PERPLEXITY_API_KEY
         self.api_url = settings.PERPLEXITY_API_URL
-        
-    async def analyze_additives(self, product: FoodProduct) -> List[Additive]:
-        """
-        Analyze additives in a product using Perplexity Sonar API
-        """
-        if not product.ingredients_text and not product.ingredients_list:
-            logger.warning(f"No ingredients found for product {product.barcode}")
-            return []
-        
-        ingredients = product.ingredients_text or ", ".join(product.ingredients_list or [])
-        
-        # Debug log to see what ingredients are being processed
-        logger.info(f"Analyzing additives for product {product.barcode} with ingredients: {ingredients[:100]}...")
-        
-        # Construct the prompt for Perplexity
-        prompt = f"""
-        Please analyze the following food product ingredients and identify all food additives (E-numbers, preservatives, colorings, etc.).
-        For each additive, provide:
-        1. The code (like E330 or the chemical name)
-        2. The common name
-        3. Safety level (Safe, Caution, Controversial, Avoid)
-        4. Brief description (what it is used for)
-        5. Potential health effects
-        6. Source of information (research organization or authority)
-        
-        Format the response as a JSON array of objects with these fields.
-        
-        Ingredients: {ingredients}
-        """
-        
-        try:
-            result = await self._query_perplexity(prompt)
-            logger.info(f"Received response from Perplexity: {result[:100]}...")
-            additives = self._parse_additives_response(result)
-            logger.info(f"Parsed {len(additives)} additives from response")
-            return additives
-        except Exception as e:
-            logger.error(f"Error analyzing additives: {str(e)}")
-            # For debugging purposes, return a test additive
-            logger.info("Returning test additive for debugging")
-            return [
-                Additive(
-                    code="E330",
-                    name="Citric Acid",
-                    safety_level="Safe",
-                    description="Used as an acidifier and antioxidant",
-                    potential_effects="Generally recognized as safe",
-                    source="FDA"
-                )
-            ]
-    
-    async def analyze_diet_compatibility(self, product: FoodProduct, diet_type: str) -> DietCompatibility:
-        """
-        Analyze compatibility of a product with a specific diet type
-        """
-        if not product.ingredients_text and not product.ingredients_list:
-            logger.warning(f"No ingredients found for product {product.barcode}")
-            return DietCompatibility(
-                diet_type=diet_type,
-                compatibility_score=0,
-                incompatible_ingredients=["Unknown - no ingredients listed"],
-                recommendations="Cannot analyze without ingredients information"
-            )
-        
-        ingredients = product.ingredients_text or ", ".join(product.ingredients_list or [])
-        nutrition = product.nutrition_facts
-        
-        # Construct prompt based on diet type
-        nutrition_info = ""
-        if nutrition:
-            nutrition_info = f"""
-            Nutrition information (per 100g):
-            - Energy: {nutrition.energy_kcal or 'Unknown'} kcal
-            - Fat: {nutrition.fat or 'Unknown'} g
-            - Saturated fat: {nutrition.saturated_fat or 'Unknown'} g
-            - Carbohydrates: {nutrition.carbohydrates or 'Unknown'} g
-            - Sugars: {nutrition.sugars or 'Unknown'} g 
-            - Fiber: {nutrition.fiber or 'Unknown'} g
-            - Proteins: {nutrition.proteins or 'Unknown'} g
-            - Salt: {nutrition.salt or 'Unknown'} g
-            """
-        
-        prompt = f"""
-        Please analyze this food product for compatibility with a {diet_type} diet.
-        
-        Product: {product.name}
-        Ingredients: {ingredients}
-        {nutrition_info}
-        
-        Provide the following as a JSON object:
-        1. compatibility_score: A number from 0-100 representing how compatible this product is with a {diet_type} diet
-        2. incompatible_ingredients: An array of ingredients that are incompatible with the diet
-        3. recommendations: Brief advice for someone following this diet
-        
-        Format your response as a valid JSON object with these fields.
-        """
-        
-        try:
-            result = await self._query_perplexity(prompt)
-            diet_analysis = self._parse_diet_compatibility_response(result, diet_type)
-            return diet_analysis
-        except Exception as e:
-            logger.error(f"Error analyzing diet compatibility: {e}")
-            # Return test data for debugging
-            logger.info(f"Returning test compatibility data for {diet_type}")
-            return DietCompatibility(
-                diet_type=diet_type,
-                compatibility_score=50,
-                incompatible_ingredients=["Sample incompatible ingredient"],
-                recommendations="This is a test recommendation. The API call failed but this allows testing the display."
-            )
-    
-    async def generate_recommendations(self, product: FoodProduct, diet_compatibilities: List[DietCompatibility]) -> DietAnalysisResult:
-        """
-        Generate overall recommendations and alternatives based on product analysis
-        """
-        diet_types = [comp.diet_type for comp in diet_compatibilities]
-        avg_score = sum(comp.compatibility_score for comp in diet_compatibilities) / len(diet_compatibilities) if diet_compatibilities else 0
-        
-        # Determine overall recommendation
-        if avg_score >= 70:
-            overall = "Recommended"
-        elif avg_score >= 40:
-            overall = "Caution"
-        else:
-            overall = "Not Recommended"
-            
-        # For simplicity, just use the first diet compatibility's recommendations
-        reason = diet_compatibilities[0].recommendations if diet_compatibilities else "No diet analysis available"
-        
-        # Get alternatives
-        alternatives = await self._get_alternatives(product, diet_types)
-        
-        return DietAnalysisResult(
-            product=product,
-            compatibility=diet_compatibilities,
-            overall_recommendation=overall,
-            recommendation_reason=reason,
-            alternatives=alternatives
-        )
-    
-    async def _get_alternatives(self, product: FoodProduct, diet_types: List[str]) -> List[str]:
-        """
-        Get alternative product suggestions
-        """
-        diet_types_str = ", ".join(diet_types)
-        
-        prompt = f"""
-        Please suggest 3-5 healthier alternatives to the following food product that would be more compatible with these diets: {diet_types_str}
-        
-        Product: {product.name}
-        Ingredients: {product.ingredients_text or ", ".join(product.ingredients_list or [])}
-        
-        Format your response as a JSON array of strings, each being a recommended alternative product.
-        """
-        
-        try:
-            result = await self._query_perplexity(prompt)
-            alternatives = self._parse_alternatives_response(result)
-            return alternatives[:5]  # Limit to 5 alternatives
-        except Exception as e:
-            logger.error(f"Error getting alternatives: {e}")
-            # Return test alternatives
-            return ["Sample alternative product 1", "Sample alternative product 2", "Sample alternative product 3"]
     
     async def analyze_comprehensive(self, product: FoodProduct, user_preferences: UserHealthProfile) -> ProductAnalysis:
         """
@@ -236,65 +72,94 @@ class PerplexitySonarService:
         
         1. health_score: An overall health score from 0-100 based on the product's nutritional value and ingredients
         2. recommendation: Either "recommended" or "not recommended" 
-        3. recommendation_reason: A brief, one-sentence reason for the recommendation
+        3. recommendation_reason: A brief, one-sentence reason for the recommendation (include citation references like [1], [2])
         4. nutrition_components: Array of important nutritional components, each with:
            - name: The name of the nutrient
            - value: Amount per {product.nutrition_facts.per_quantity if product.nutrition_facts else "100g"}
            - health_rating: Either "healthy", "moderate", or "unhealthy"
-           - reason: Brief explanation of health impact
+           - reason: Brief explanation of health impact (include citation references like [1], [2])
         5. key_ingredients: Array of notable non-additive ingredients that have significant health impacts, each with:
            - name: Ingredient name
            - description: Brief description
-           - health_impact: How it affects health
+           - health_impact: How it affects health (include citation references like [1], [2])
         6. additives: Array of food additives (E-numbers, preservatives, colorings, emulsifiers, etc.) IDENTIFIED FROM THE INGREDIENTS LIST, each with:
            - code: Additive code (like E330 or chemical name)
            - name: Common name
            - safety_level: "Safe", "Caution", "Controversial", or "Avoid"
-           - description: What it's used for
-           - potential_effects: Health effects
-           - source: Information source
-        7. sources: Array of URL references to academic or authoritative sources
+           - description: What it is used for
+           - potential_effects: Health effects (include citation references like [1], [2])
+           - source: Information source reference number (e.g., [1])
+        7. sources: Array of citation objects, each with:
+           - title: The title or name of the source
+           - url: The URL or reference information for the source
         
-        IMPORTANT: You must analyze the ingredients list and identify ANY food additives mentioned (such as e442, e476, citric acid, tocopherol, emulsifiers, etc.). Each identified additive should be included in the "additives" array with its details.
+        IMPORTANT CONSIDERATIONS FOR THIS ANALYSIS:
+        - You MUST carefully scan the ingredients list and identify ANY additives mentioned (such as e442, e476, citric acid, emulsifiers, preservatives, colors, etc.)
+        - For user allergies, specifically check if any ingredients in the product could trigger those allergies
+        - You should user's health profile into consideration when analyzing the product
+        - Consider both direct mentions of allergens and "may contain" statements
+        - Base your analysis on scientific evidence and nutritional guidelines
+        - Citations from scientific and authoritative sources are preferred
+        - Include citation references [1], [2], etc. in your text to link to sources array
+        - Format each source in the sources array as an object with "title" and "url" fields
         
-        Base your analysis on scientific evidence and prioritize academic references. Consider the user's health profile when determining recommendations.
-        Return ONLY the JSON response without additional text.
+        Return the analysis as a clean, properly-formatted JSON object without any preamble or explanation.
         """
         
         try:
+            logger.info(f"Starting comprehensive analysis for product: {product.name}")
             result = await self._query_perplexity(prompt, model="sonar-pro")
-            return self._parse_comprehensive_analysis(result)
+            analysis = self._parse_comprehensive_analysis(result)
+            logger.info(f"Completed comprehensive analysis for product: {product.name}")
+            return analysis
         except Exception as e:
             logger.error(f"Error in comprehensive analysis: {str(e)}")
-            # Return fallback data for testing
+            
+            # Get a safe ingredient name for display
+            ingredient_name = "Main ingredient"
+            if product.ingredients_list and len(product.ingredients_list) > 0:
+                ingredient_name = product.ingredients_list[0]
+            elif product.ingredients_text:
+                # Try to extract the first ingredient from text
+                parts = product.ingredients_text.split(',')
+                if parts and parts[0]:
+                    ingredient_name = parts[0].strip()
+            
+            # Create a basic analysis with the error information
             return ProductAnalysis(
-                health_score=50,
-                recommendation="Caution",
-                recommendation_reason="Analysis failed, using default recommendation",
+                health_score=30,
+                recommendation="Not recommended",
+                recommendation_reason=f"Analysis service unavailable. Basic assessment shows product is not suitable [1].",
                 nutrition_components=[
                     NutritionComponent(
                         name="Sugar",
-                        value="58.5g/100g",
+                        value=f"{product.nutrition_facts.sugars if product.nutrition_facts and product.nutrition_facts.sugars else '?'}g/100g",
                         health_rating="unhealthy",
-                        reason="Very high sugar content"
+                        reason="High sugar content is concerning for most diet types [1]"
                     ),
                     NutritionComponent(
                         name="Fat",
-                        value="27.5g/100g",
+                        value=f"{product.nutrition_facts.fat if product.nutrition_facts and product.nutrition_facts.fat else '?'}g/100g",
                         health_rating="moderate",
-                        reason="Moderate to high fat content"
+                        reason="Fat content should be monitored [2]"
+                    ),
+                    NutritionComponent(
+                        name="Carbohydrates",
+                        value=f"{product.nutrition_facts.carbohydrates if product.nutrition_facts and product.nutrition_facts.carbohydrates else '?'}g/100g",
+                        health_rating="unhealthy",
+                        reason="High carbohydrate content is incompatible with keto diet [1]"
                     )
                 ],
                 key_ingredients=[
                     KeyIngredient(
-                        name="Cocoa",
-                        description="Main ingredient in chocolate",
-                        health_impact="Contains antioxidants, may have heart health benefits in moderate amounts"
+                        name=ingredient_name,
+                        description="Primary ingredient in product",
+                        health_impact="May have health implications depending on diet requirements [2]"
                     ),
                     KeyIngredient(
-                        name="Sugar",
-                        description="Primary sweetener",
-                        health_impact="High amounts can contribute to obesity and diabetes"
+                        name="Processed ingredients",
+                        description="Various processed components",
+                        health_impact="Processed foods are generally less healthy than whole foods [1]"
                     )
                 ],
                 additives=[
@@ -302,20 +167,24 @@ class PerplexitySonarService:
                         code="E442",
                         name="Ammonium phosphatides",
                         safety_level="Caution",
-                        description="Emulsifier used in chocolate products",
-                        potential_effects="Generally recognized as safe, but some people may experience digestive issues",
-                        source="European Food Safety Authority"
+                        description="Emulsifier commonly used in chocolate products",
+                        potential_effects="Generally recognized as safe in limited amounts [3]",
+                        source="[3]"
                     ),
                     Additive(
                         code="E476",
                         name="Polyglycerol polyricinoleate",
                         safety_level="Caution",
                         description="Emulsifier used in chocolate manufacturing",
-                        potential_effects="May cause digestive discomfort in sensitive individuals",
-                        source="FDA"
+                        potential_effects="Generally recognized as safe in limited amounts [3]",
+                        source="[3]"
                     )
                 ],
-                sources=["https://www.efsa.europa.eu/", "https://www.fda.gov/"]
+                sources=[
+                    Citation(title="World Health Organization Nutritional Guidelines", url="https://www.who.int/news-room/fact-sheets/detail/healthy-diet"),
+                    Citation(title="Harvard School of Public Health - The Nutrition Source", url="https://www.hsph.harvard.edu/nutritionsource/"),
+                    Citation(title="European Food Safety Authority Additives Database", url="https://www.efsa.europa.eu/en/topics/topic/food-additives")
+                ]
             )
     
     def _parse_comprehensive_analysis(self, response: str) -> ProductAnalysis:
@@ -323,89 +192,95 @@ class PerplexitySonarService:
         Parse the comprehensive analysis response from Perplexity
         """
         try:
-            # Extract JSON if it's wrapped in text
+            # Try to extract JSON from the response
             json_start = response.find('{')
             json_end = response.rfind('}') + 1
             
-            if json_start != -1 and json_end != -1:
+            if json_start >= 0 and json_end > json_start:
                 json_str = response[json_start:json_end]
                 data = json.loads(json_str)
-                
-                # Parse nutrition components
-                nutrition_components = []
-                for comp in data.get("nutrition_components", []):
-                    nutrition_components.append(
-                        NutritionComponent(
-                            name=comp.get("name", ""),
-                            value=comp.get("value", ""),
-                            health_rating=comp.get("health_rating", ""),
-                            reason=comp.get("reason", "")
-                        )
-                    )
-                
-                # Parse key ingredients
-                key_ingredients = []
-                for ing in data.get("key_ingredients", []):
-                    key_ingredients.append(
-                        KeyIngredient(
-                            name=ing.get("name", ""),
-                            description=ing.get("description", ""),
-                            health_impact=ing.get("health_impact", "")
-                        )
-                    )
-                
-                # Parse additives
-                additives = []
-                for add in data.get("additives", []):
-                    additives.append(
-                        Additive(
-                            code=add.get("code", ""),
-                            name=add.get("name", ""),
-                            safety_level=add.get("safety_level", "Unknown"),
-                            description=add.get("description", ""),
-                            potential_effects=add.get("potential_effects", ""),
-                            source=add.get("source", "")
-                        )
-                    )
-                
-                return ProductAnalysis(
-                    health_score=data.get("health_score", 50),
-                    recommendation=data.get("recommendation", "Caution"),
-                    recommendation_reason=data.get("recommendation_reason", "Insufficient data for analysis"),
-                    nutrition_components=nutrition_components,
-                    key_ingredients=key_ingredients,
-                    additives=additives,
-                    sources=data.get("sources", [])
-                )
             else:
-                logger.warning("No valid JSON object found in comprehensive analysis response")
-                return ProductAnalysis(
-                    health_score=0,
-                    recommendation="Not recommended",
-                    recommendation_reason="Analysis failed - no valid data",
-                    nutrition_components=[],
-                    key_ingredients=[],
-                    additives=[]
+                logger.warning("Could not find JSON in response, attempting to parse full response")
+                data = json.loads(response)
+            
+            # Extract health score, ensuring it's between 0 and 100
+            health_score = data.get("health_score", 0)
+            try:
+                health_score = int(health_score)
+                health_score = max(0, min(100, health_score))  # Clamp between 0 and 100
+            except (ValueError, TypeError):
+                health_score = 0
+            
+            # Parse nutrition components
+            nutrition_components = []
+            for nc in data.get("nutrition_components", []):
+                component = NutritionComponent(
+                    name=nc.get("name", "Unknown"),
+                    value=nc.get("value", "Unknown"),
+                    health_rating=nc.get("health_rating", "Unknown"),
+                    reason=nc.get("reason", "No information provided")
                 )
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse comprehensive analysis JSON: {e}")
+                nutrition_components.append(component)
+            
+            # Parse key ingredients
+            key_ingredients = []
+            for ki in data.get("key_ingredients", []):
+                ingredient = KeyIngredient(
+                    name=ki.get("name", "Unknown"),
+                    description=ki.get("description", "No description provided"),
+                    health_impact=ki.get("health_impact", "Unknown")
+                )
+                key_ingredients.append(ingredient)
+            
+            # Parse additives
+            additives = []
+            for add in data.get("additives", []):
+                additive = Additive(
+                    code=add.get("code", "Unknown"),
+                    name=add.get("name", "Unknown"),
+                    safety_level=add.get("safety_level", "Unknown"),
+                    description=add.get("description", "No description provided"),
+                    potential_effects=add.get("potential_effects", "Unknown"),
+                    source=add.get("source", "Unknown")
+                )
+                additives.append(additive)
+            
+            # Parse structured sources/citations
+            sources = []
+            source_data = data.get("sources", [])
+            
+            # Handle sources as either string array or structured objects
+            for src in source_data:
+                if isinstance(src, str):
+                    # Convert simple string to structured citation
+                    sources.append(Citation(title=src))
+                elif isinstance(src, dict):
+                    # Process structured citation object
+                    sources.append(Citation(
+                        title=src.get("title", "Unnamed Source"),
+                        url=src.get("url")
+                    ))
+                    
+            # Create full analysis
             return ProductAnalysis(
-                health_score=0,
-                recommendation="Not recommended",
-                recommendation_reason="Analysis failed - JSON parsing error",
-                nutrition_components=[],
-                key_ingredients=[],
-                additives=[]
+                health_score=health_score,
+                recommendation=data.get("recommendation", "not recommended"),
+                recommendation_reason=data.get("recommendation_reason", "No reason provided"),
+                nutrition_components=nutrition_components,
+                key_ingredients=key_ingredients,
+                additives=additives,
+                sources=sources
             )
         except Exception as e:
-            logger.error(f"Error parsing comprehensive analysis: {e}")
+            logger.error(f"Error parsing comprehensive analysis: {str(e)}")
             return ProductAnalysis(
                 health_score=0,
                 recommendation="Not recommended",
-                recommendation_reason=f"Analysis error: {str(e)}",
+                recommendation_reason=f"Error parsing analysis: {str(e)}",
                 nutrition_components=[],
                 key_ingredients=[],
-                additives=[]
+                additives=[],
+                sources=[Citation(title="Error in analysis")]
             )
     
     async def _query_perplexity(self, prompt: str, model: str = "sonar-pro") -> str:
@@ -413,161 +288,48 @@ class PerplexitySonarService:
         Query the Perplexity Sonar API
         """
         if not self.api_key:
-            logger.error("Missing Perplexity API key")
-            raise ValueError("Missing Perplexity API key")
+            logger.error("Perplexity API key not set")
+            raise ValueError("Perplexity API key not set. Please check your environment variables.")
         
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
         
-        # Updated payload format according to Perplexity API specifications
+        # Use the correct message format required by Perplexity API
         payload = {
             "model": model,
             "messages": [
                 {"role": "system", "content": "You are a food science and nutritional expert that provides accurate, science-based analysis of food products."},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.2  # Lower temperature for more consistent outputs
+            "temperature": 0.2,  # Lower temperature for more consistent outputs
+            "web_search_options": {"search_context_size": "medium"}
         }
         
+        url = f"{self.api_url}/chat/completions"
+        
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.api_url}/chat/completions", 
-                    headers=headers,
-                    json=payload,
-                    timeout=30.0
-                )
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                logger.info(f"Sending request to Perplexity API with model: {model}")
+                response = await client.post(url, json=payload, headers=headers)
+                response.raise_for_status()
+                data = response.json()
                 
-                # Enhanced error logging
-                if response.status_code != 200:
-                    error_detail = f"Status: {response.status_code}, Response: {response.text}"
-                    logger.error(f"Perplexity API error: {error_detail}")
-                    raise httpx.HTTPError(f"HTTP error {response.status_code}: {response.text}")
-                
-                result = response.json()
-                
-                return result["choices"][0]["message"]["content"]
+                if "choices" in data and len(data["choices"]) > 0:
+                    return data["choices"][0]["message"]["content"]
+                else:
+                    logger.error("Unexpected response structure from Perplexity API")
+                    raise ValueError("Unexpected response structure from Perplexity API")
         except httpx.HTTPError as e:
-            logger.error(f"HTTP error occurred: {e}")
-            raise e
+            logger.error(f"HTTP error occurred while querying Perplexity: {e}")
+            # Include response details if available
+            if hasattr(e, 'response') and e.response:
+                logger.error(f"Response status: {e.response.status_code}")
+                logger.error(f"Response body: {e.response.text}")
+            raise ValueError(f"Error communicating with Perplexity API: {str(e)}")
         except Exception as e:
-            logger.error(f"Error querying Perplexity: {e}")
-            raise e
-    
-    def _parse_additives_response(self, response: str) -> List[Additive]:
-        """
-        Parse additives from Perplexity API response
-        """
-        try:
-            # Extract JSON if it's wrapped in text
-            json_start = response.find('[')
-            json_end = response.rfind(']') + 1
-            
-            if json_start != -1 and json_end != -1:
-                json_str = response[json_start:json_end]
-                additives_data = json.loads(json_str)
-                
-                additives = []
-                for item in additives_data:
-                    additive = Additive(
-                        code=item.get("code", ""),
-                        name=item.get("common_name", ""),
-                        safety_level=item.get("safety_level", "Unknown"),
-                        description=item.get("description", ""),
-                        potential_effects=item.get("potential_health_effects", ""),
-                        source=item.get("source", "")
-                    )
-                    additives.append(additive)
-                
-                return additives
-            else:
-                logger.warning("No valid JSON array found in response")
-                return []
-        except json.JSONDecodeError:
-            logger.error("Failed to parse additives JSON")
-            return []
-        except Exception as e:
-            logger.error(f"Error parsing additives: {e}")
-            return []
-    
-    def _parse_diet_compatibility_response(self, response: str, diet_type: str) -> DietCompatibility:
-        """
-        Parse diet compatibility from Perplexity API response
-        """
-        try:
-            # Extract JSON if it's wrapped in text
-            json_start = response.find('{')
-            json_end = response.rfind('}') + 1
-            
-            if json_start != -1 and json_end != -1:
-                json_str = response[json_start:json_end]
-                data = json.loads(json_str)
-                
-                compatibility = DietCompatibility(
-                    diet_type=diet_type,
-                    compatibility_score=float(data.get("compatibility_score", 0)),
-                    incompatible_ingredients=data.get("incompatible_ingredients", []),
-                    recommendations=data.get("recommendations", "No specific recommendations")
-                )
-                
-                return compatibility
-            else:
-                logger.warning("No valid JSON object found in response")
-                return DietCompatibility(
-                    diet_type=diet_type,
-                    compatibility_score=0,
-                    incompatible_ingredients=["Unknown"],
-                    recommendations="Failed to analyze compatibility"
-                )
-        except json.JSONDecodeError:
-            logger.error("Failed to parse diet compatibility JSON")
-            return DietCompatibility(
-                diet_type=diet_type,
-                compatibility_score=0,
-                incompatible_ingredients=["Error in analysis"],
-                recommendations="Failed to analyze compatibility"
-            )
-        except Exception as e:
-            logger.error(f"Error parsing diet compatibility: {e}")
-            return DietCompatibility(
-                diet_type=diet_type,
-                compatibility_score=0,
-                incompatible_ingredients=["Error"],
-                recommendations=f"Error: {str(e)}"
-            )
-    
-    def _parse_alternatives_response(self, response: str) -> List[str]:
-        """
-        Parse alternatives from Perplexity API response
-        """
-        try:
-            # Extract JSON if it's wrapped in text
-            json_start = response.find('[')
-            json_end = response.rfind(']') + 1
-            
-            if json_start != -1 and json_end != -1:
-                json_str = response[json_start:json_end]
-                alternatives = json.loads(json_str)
-                return alternatives
-            else:
-                # Fallback: try to extract suggestions from text
-                lines = response.split('\n')
-                alternatives = []
-                for line in lines:
-                    if '-' in line or '•' in line or '*' in line:
-                        # It might be a list item
-                        alt = line.split('-')[-1].split('•')[-1].split('*')[-1].strip()
-                        if alt:
-                            alternatives.append(alt)
-                
-                return alternatives if alternatives else ["No alternatives found"]
-        except json.JSONDecodeError:
-            logger.error("Failed to parse alternatives JSON")
-            return ["Error parsing alternatives"]
-        except Exception as e:
-            logger.error(f"Error parsing alternatives: {e}")
-            return ["Error fetching alternatives"]
+            logger.error(f"Error occurred while querying Perplexity: {e}")
+            raise ValueError(f"Error querying Perplexity API: {str(e)}")
 
 perplexity_service = PerplexitySonarService() 

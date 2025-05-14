@@ -35,21 +35,6 @@ class FoodProduct(BaseModel):
     nutrition_facts: Optional[NutritionFacts] = None
 
 
-class DietCompatibility(BaseModel):
-    diet_type: str  # keto, vegan, low-carb, etc.
-    compatibility_score: float = Field(..., ge=0, le=100)  # percentage (0-100)
-    incompatible_ingredients: Optional[List[str]] = None
-    recommendations: Optional[str] = None
-
-
-class DietAnalysisResult(BaseModel):
-    product: FoodProduct
-    compatibility: List[DietCompatibility] = []
-    overall_recommendation: str  # Recommended, Caution, Not Recommended
-    recommendation_reason: str
-    alternatives: Optional[List[str]] = None
-
-
 class NutritionComponent(BaseModel):
     name: str
     value: str  # e.g., "10g/100g"
@@ -69,6 +54,12 @@ class UserHealthProfile(BaseModel):
     health_conditions: Optional[List[str]] = []
 
 
+class Citation(BaseModel):
+    """Model for structured citations with title and URL"""
+    title: str
+    url: Optional[str] = None
+
+
 class ProductAnalysis(BaseModel):
     health_score: int = Field(..., ge=0, le=100)  # Overall health score (0-100)
     recommendation: str  # "recommended", "not recommended"
@@ -76,4 +67,4 @@ class ProductAnalysis(BaseModel):
     nutrition_components: List[NutritionComponent] = []
     key_ingredients: List[KeyIngredient] = []
     additives: List[Additive] = []
-    sources: Optional[List[str]] = None  # Source references 
+    sources: Optional[List[Citation]] = None  # Structured source references 

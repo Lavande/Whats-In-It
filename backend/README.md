@@ -6,9 +6,7 @@ This is the backend API for the "What's In It" application, which helps users un
 
 - Barcode scanning and product information retrieval via OpenFoodFacts API
 - Food additive safety analysis using Perplexity Sonar API
-- Diet compatibility analysis (keto, vegan, low-carb, etc.)
 - Personalized dietary recommendations
-- User preferences and history storage
 
 ## Technology Stack
 
@@ -63,21 +61,11 @@ FastAPI automatically generates interactive API documentation:
 ### Product Information
 
 - `GET /api/v1/product/{barcode}` - Get product by barcode
-- `GET /api/v1/product/{barcode}/additives` - Get product additives analysis
 
-### Scan and Analysis
+### Analysis
 
-- `POST /api/v1/scan/{barcode}` - Complete scan workflow
-- `POST /api/v1/analyze-diet-compatibility` - Analyze diet compatibility
-- `POST /api/v1/analyze-additives` - Analyze additives in a product
-
-### User Preferences and History
-
-- `GET /api/v1/preferences` - Get user preferences
-- `POST /api/v1/preferences` - Update user preferences
-- `GET /api/v1/history` - Get scan history
-- `DELETE /api/v1/history` - Clear scan history
+- `POST /api/v1/analyze-comprehensive` - Comprehensive product analysis based on user preferences
 
 ## Data Storage
 
-User preferences and scan history are stored locally in JSON files in the `data` directory. 
+Product information is cached temporarily to reduce API calls. 
