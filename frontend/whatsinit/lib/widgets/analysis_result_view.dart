@@ -101,11 +101,6 @@ class AnalysisResultView extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (recommendationReason.isNotEmpty) ...[
-          Text(
-            'Reason:',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
           Text(recommendationReason),
         ],
       ],
@@ -117,8 +112,8 @@ class AnalysisResultView extends StatelessWidget {
     final nutritionItems = nutrition.entries.toList();
     final hasNutrition = nutritionItems.isNotEmpty;
     
-    // Primary nutrients to show by default (sugar, fat, protein)
-    final List<String> primaryNutrients = ['Sugar', 'Fat', 'Protein', 'Proteins'];
+    // Primary nutrients to show by default (carbohydrates, fat, protein)
+    final List<String> primaryNutrientKeywords = ['Carbohydrate', 'Carbs', 'Fat', 'Protein', 'Proteins'];
     
     // Secondary nutrients to show in the "More" section
     final List<MapEntry<String, dynamic>> primaryEntries = [];
@@ -126,7 +121,8 @@ class AnalysisResultView extends StatelessWidget {
     
     // Split nutrition items into primary and secondary entries
     for (var entry in nutritionItems) {
-      if (primaryNutrients.contains(entry.key)) {
+      if (primaryNutrientKeywords.any((keyword) => 
+          entry.key.toLowerCase().contains(keyword.toLowerCase()))) {
         primaryEntries.add(entry);
       } else {
         secondaryEntries.add(entry);
@@ -145,20 +141,12 @@ class AnalysisResultView extends StatelessWidget {
           // Always show primary nutrients
           ...primaryEntries.map((entry) => _buildNutritionItem(context, entry.key, entry.value)),
           
-          // Show additional nutrients in an expansion panel if there are any
+          // Show additional nutrients in an expandable section if there are any
           if (secondaryEntries.isNotEmpty) ...[
             const SizedBox(height: 16),
-            ExpansionTile(
-              title: Text(
-                'More Nutrition Info',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              initiallyExpanded: false,
-              children: [
-                ...secondaryEntries.map((entry) => _buildNutritionItem(context, entry.key, entry.value)),
-              ],
+            _ExpandableNutritionSection(
+              entries: secondaryEntries,
+              buildItem: (entry) => _buildNutritionItem(context, entry.key, entry.value),
             ),
           ],
         ] else ...[
@@ -296,13 +284,6 @@ class AnalysisResultView extends StatelessWidget {
                       if (healthImpact.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
-                          'Health Impact:',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
                           healthImpact,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: impactColor,
@@ -405,16 +386,18 @@ class AnalysisResultView extends StatelessWidget {
                       ],
                       if (potentialEffects.isNotEmpty) ...[
                         const SizedBox(height: 8),
-                        Text(
-                          'Potential Effects:',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          potentialEffects,
-                          style: Theme.of(context).textTheme.bodySmall,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                potentialEffects,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],
@@ -433,9 +416,9 @@ class AnalysisResultView extends StatelessWidget {
         ],
       ],
     );
-      }
+  }
   
-    Widget _buildSourcesSection(BuildContext context) {
+  Widget _buildSourcesSection(BuildContext context) {
     final sources = result.sources;
     
     return Column(
@@ -495,6 +478,55 @@ class AnalysisResultView extends StatelessWidget {
       }
     } catch (e) {
       print('Error launching URL: $e');
+    }
+  }
+}
+
+class _ExpandableNutritionSection extends StatefulWidget {
+  final List<MapEntry<String, dynamic>> entries;
+  final Widget Function(MapEntry<String, dynamic>) buildItem;
+
+  const _ExpandableNutritionSection({
+    required this.entries,
+    required this.buildItem,
+  });
+
+  @override
+  _ExpandableNutritionSectionState createState() => _ExpandableNutritionSectionState();
+}
+
+class _ExpandableNutritionSectionState extends State<_ExpandableNutritionSection> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isExpanded) {
+      return TextButton.icon(
+        onPressed: () {
+          setState(() {
+            _isExpanded = true;
+          });
+        },
+        icon: const Icon(Icons.expand_more),
+        label: const Text('More'),
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...widget.entries.map(widget.buildItem),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _isExpanded = false;
+              });
+            },
+            icon: const Icon(Icons.expand_less),
+            label: const Text('Collapse'),
+          ),
+        ],
+      );
     }
   }
 } 
