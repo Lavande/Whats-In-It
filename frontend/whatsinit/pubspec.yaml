@@ -48,6 +48,9 @@ dependencies:
   
   # For opening URLs
   url_launcher: ^6.1.14
+  
+  # Google Fonts
+  google_fonts: ^5.1.0
 
 dev_dependencies:
   flutter_test:

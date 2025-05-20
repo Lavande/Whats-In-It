@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import '../models/product.dart';
 import '../models/analysis_result.dart';
@@ -7,9 +8,30 @@ import '../models/user_preferences.dart';
 
 class ApiService {
   // In a real app, this would come from environment variables
-  final String baseUrl = Platform.isAndroid 
-      ? 'http://10.0.2.2:8000'  // Android emulator localhost 
-      : 'http://localhost:8000'; // iOS simulator localhost
+  final String baseUrl = _getBaseUrl();
+  
+  // Helper method to determine base URL based on platform
+  static String _getBaseUrl() {
+    if (kIsWeb) {
+      // For web platform
+      return 'http://localhost:8001';
+    } else {
+      // For native platforms, import dart:io conditionally
+      return _getPlatformSpecificUrl();
+    }
+  }
+  
+  // This is only called for non-web platforms
+  static String _getPlatformSpecificUrl() {
+    try {
+      // Since we can't reliably detect the platform without dart:io on web,
+      // we'll use a simplified approach and default to localhost
+      return 'http://localhost:8001';
+    } catch (e) {
+      // Fallback for any issues
+      return 'http://localhost:8001';
+    }
+  }
   
   // Get product information by barcode
   Future<Product> getProductByBarcode(String barcode) async {

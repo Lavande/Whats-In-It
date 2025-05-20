@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/product_provider.dart';
 import '../widgets/analysis_result_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key}) : super(key: key);
@@ -28,7 +29,7 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Analysis'),
+        title: const Text('What\'s In It', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       ),
       body: Consumer<ProductProvider>(
@@ -67,28 +68,24 @@ class _ProductScreenState extends State<ProductScreen> {
         children: [
           Text(
             product.name,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+            style: GoogleFonts.notoSans(
+              fontSize: 22, 
+              fontWeight: FontWeight.bold
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Brand: ${product.brand}',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          if (product.barcode.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Barcode: ${product.barcode}',
-              style: Theme.of(context).textTheme.bodyMedium,
+            'Brand: ${product.brand}  |  Barcode: ${product.barcode}',
+            style: GoogleFonts.roboto(
+              color: Colors.grey[600],
+              fontSize: 14,
             ),
-          ],
-          const SizedBox(height: 16),
-          const Divider(),
+          ),
           const SizedBox(height: 16),
           
           // Ingredients Section (Collapsible)
-          _buildCollapsibleIngredients(context, product),
+          if (product.ingredientsText.isNotEmpty || product.ingredients.isNotEmpty)
+            _buildCollapsibleIngredients(context, product),
         ],
       ),
     );
@@ -103,23 +100,41 @@ class _ProductScreenState extends State<ProductScreen> {
       return Container();
     }
     
-    return ExpansionTile(
-      title: Text(
-        'Ingredients',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.grey[200]!, width: 1.0),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: ExpansionTile(
+          title: Text(
+            'Ingredients',
+            style: GoogleFonts.roboto(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          leading: const Icon(Icons.receipt_long),
+          initiallyExpanded: false,
+          childrenPadding: EdgeInsets.zero,
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          shape: const Border(),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+              child: Text(
+                ingredientsText,
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      initiallyExpanded: false,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Text(
-            ingredientsText,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-      ],
     );
   }
 
@@ -137,12 +152,18 @@ class _ProductScreenState extends State<ProductScreen> {
             const SizedBox(height: 24),
             Text(
               'Analyzing product...',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: GoogleFonts.roboto(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'We are examining ingredients, additives, and nutritional information based on your preferences.',
               textAlign: TextAlign.center,
+              style: GoogleFonts.roboto(
+                color: Colors.grey[700],
+              ),
             ),
           ],
         ),
@@ -160,7 +181,10 @@ class _ProductScreenState extends State<ProductScreen> {
             const SizedBox(height: 16),
             Text(
               'Analysis Error',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: GoogleFonts.roboto(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Padding(
@@ -168,13 +192,19 @@ class _ProductScreenState extends State<ProductScreen> {
               child: Text(
                 _formatErrorMessage(provider.errorMessage),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () => provider.analyzeProduct(),
-              child: const Text('Try Again'),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
             ),
           ],
         ),
@@ -183,10 +213,18 @@ class _ProductScreenState extends State<ProductScreen> {
       return AnalysisResultView(result: provider.analysisResult!);
     } else {
       return Container(
-        padding: const EdgeInsets.all(16.0),
-        child: ElevatedButton(
+        padding: const EdgeInsets.all(24.0),
+        child: ElevatedButton.icon(
           onPressed: () => provider.analyzeProduct(),
-          child: const Text('Analyze Product'),
+          icon: const Icon(Icons.search),
+          label: const Text('Analyze Product'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: GoogleFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       );
     }
