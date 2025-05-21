@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
+import '../providers/user_preferences_provider.dart';
 import '../screens/product_screen.dart';
+import '../screens/onboarding_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -25,6 +27,21 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text("What's In It"),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'reset_onboarding') {
+                _resetOnboarding();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'reset_onboarding',
+                child: Text('Reset Onboarding'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(20.0),
@@ -119,5 +136,15 @@ class _HomeScreenState extends State<HomeScreen> {
         SnackBar(content: Text(provider.errorMessage)),
       );
     }
+  }
+
+  void _resetOnboarding() {
+    final provider = Provider.of<UserPreferencesProvider>(context, listen: false);
+    provider.resetOnboarding();
+    
+    // Navigate back to onboarding screen
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+    );
   }
 } 

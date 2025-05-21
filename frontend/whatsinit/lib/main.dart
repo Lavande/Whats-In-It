@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/product_provider.dart';
+import 'providers/user_preferences_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,8 +14,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ProductProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ProductProvider()),
+        ChangeNotifierProvider(create: (context) => UserPreferencesProvider()),
+      ],
       child: MaterialApp(
         title: 'What\'s In It',
         theme: ThemeData(
@@ -38,9 +43,50 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const HomeScreen(),
+        home: const OnboardingCheck(),
         debugShowCheckedModeBanner: false,
       ),
     );
+  }
+}
+
+class OnboardingCheck extends StatefulWidget {
+  const OnboardingCheck({Key? key}) : super(key: key);
+
+  @override
+  State<OnboardingCheck> createState() => _OnboardingCheckState();
+}
+
+class _OnboardingCheckState extends State<OnboardingCheck> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePreferences();
+  }
+
+  Future<void> _initializePreferences() async {
+    final provider = Provider.of<UserPreferencesProvider>(context, listen: false);
+    await provider.initialize();
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final provider = Provider.of<UserPreferencesProvider>(context);
+    return provider.onboardingCompleted
+        ? const HomeScreen()
+        : const OnboardingScreen();
   }
 }
