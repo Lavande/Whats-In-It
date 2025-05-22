@@ -4,12 +4,14 @@ import '../models/analysis_result.dart';
 import '../models/user_preferences.dart';
 import '../services/api_service.dart';
 import '../services/barcode_service.dart';
+import '../providers/user_preferences_provider.dart';
 
 enum LoadingState { idle, loading, error, success }
 
 class ProductProvider with ChangeNotifier {
   ApiService _apiService = ApiService();
   final BarcodeService _barcodeService = BarcodeService();
+  late UserPreferencesProvider _userPreferencesProvider;
   
   // State
   Product? _product;
@@ -18,19 +20,21 @@ class ProductProvider with ChangeNotifier {
   LoadingState _productLoadingState = LoadingState.idle;
   LoadingState _analysisLoadingState = LoadingState.idle;
   
-  // Mock user preferences - in a real app, this would be stored in preferences
-  UserPreferences _userPreferences = UserPreferences.mockData();
-
   // Getters
   Product? get product => _product;
   AnalysisResult? get analysisResult => _analysisResult;
   String get errorMessage => _errorMessage;
   LoadingState get productLoadingState => _productLoadingState;
   LoadingState get analysisLoadingState => _analysisLoadingState;
-  UserPreferences get userPreferences => _userPreferences;
+  UserPreferences get userPreferences => _userPreferencesProvider.userPreferences;
   
   // Check if we can proceed to analysis (product must be loaded)
   bool get canAnalyze => _product != null;
+  
+  // Constructor that takes UserPreferencesProvider
+  ProductProvider({required UserPreferencesProvider userPreferencesProvider}) {
+    _userPreferencesProvider = userPreferencesProvider;
+  }
   
   // Allow updating the API service with a new one that has found a working connection
   void updateApiService(ApiService newService) {
@@ -114,11 +118,11 @@ class ProductProvider with ChangeNotifier {
     try {
       print("Product data being sent: Barcode: ${_product!.barcode}, Name: ${_product!.name}");
       print("Ingredients: ${_product!.ingredients.join(', ')}");
-      print("User preferences: Diet type: ${_userPreferences.dietType}");
+      print("User preferences: Diet type: ${userPreferences.dietType}");
       
       final analysisResult = await _apiService.getComprehensiveAnalysis(
         _product!,
-        _userPreferences,
+        userPreferences,
       );
       _setAnalysisLoaded(analysisResult);
     } catch (e) {
@@ -129,8 +133,7 @@ class ProductProvider with ChangeNotifier {
 
   // Update user preferences
   void updateUserPreferences(UserPreferences preferences) {
-    _userPreferences = preferences;
-    notifyListeners();
+    _userPreferencesProvider.savePreferences(preferences);
     
     // If we have a product loaded, re-analyze with new preferences
     if (_product != null && _analysisResult != null) {

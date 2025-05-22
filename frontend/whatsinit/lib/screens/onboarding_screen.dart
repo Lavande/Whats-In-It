@@ -452,6 +452,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final userPrefs = UserPreferences(
       dietType: [_selectedDietStyle],
       allergies: _selectedAllergies,
+      avoidIngredients: [], // Default to empty list
       sugarConcern: _selectedHealthFocus.contains('sugar'),
       saltConcern: _selectedHealthFocus.contains('salt'),
       fatConcern: _selectedHealthFocus.contains('cholesterol'),

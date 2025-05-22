@@ -94,7 +94,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/api/v1/product/$barcode'),
         headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 30)); // Add longer timeout
+      ).timeout(const Duration(seconds: 45)); // Increased timeout from 30 to 45 seconds
 
       print('Response received - Status: ${response.statusCode}');
       
@@ -149,7 +149,7 @@ class ApiService {
         Uri.parse('$baseUrl/api/v1/analyze-comprehensive'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(requestBody),
-      ).timeout(const Duration(seconds: 30)); // Add longer timeout
+      ).timeout(const Duration(seconds: 90)); // Increased timeout from 30 to 90 seconds for comprehensive analysis
 
       // Log the response for debugging
       print('Response status: ${response.statusCode}');
