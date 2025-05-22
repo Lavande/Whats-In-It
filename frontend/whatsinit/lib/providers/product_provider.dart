@@ -34,13 +34,36 @@ class ProductProvider with ChangeNotifier {
 
   // Scan barcode and load product information
   Future<void> scanAndLoadProduct() async {
+    _setProductLoading();
+    
     try {
-      final barcode = await _barcodeService.scanBarcode();
-      if (barcode != null) {
-        await loadProductByBarcode(barcode);
+      if (kDebugMode) {
+        print("Attempting to scan barcode...");
       }
+      
+      final barcode = await _barcodeService.scanBarcode();
+      
+      if (barcode == null) {
+        // User cancelled the scan
+        _resetLoadingState();
+        return;
+      }
+      
+      if (kDebugMode) {
+        print("Barcode scanned: $barcode");
+      }
+      
+      await loadProductByBarcode(barcode);
     } catch (e) {
-      _setError('Failed to scan barcode: ${e.toString()}');
+      if (kDebugMode) {
+        print("Error in scanAndLoadProduct: $e");
+      }
+      
+      if (e.toString().contains("permission")) {
+        _setError('Camera permission denied. Please enable camera access in your device settings.');
+      } else {
+        _setError('Failed to scan barcode: ${e.toString()}');
+      }
     }
   }
 
@@ -131,6 +154,12 @@ class ProductProvider with ChangeNotifier {
     _errorMessage = message;
     _productLoadingState = LoadingState.error;
     _analysisLoadingState = LoadingState.error;
+    notifyListeners();
+  }
+
+  // Reset loading state without error
+  void _resetLoadingState() {
+    _productLoadingState = LoadingState.idle;
     notifyListeners();
   }
 } 

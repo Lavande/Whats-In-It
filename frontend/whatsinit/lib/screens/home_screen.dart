@@ -96,18 +96,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _scanBarcode(BuildContext context) async {
     final provider = Provider.of<ProductProvider>(context, listen: false);
-    await provider.scanAndLoadProduct();
     
-    if (provider.productLoadingState == LoadingState.success) {
-      // Navigate to product screen if scan was successful
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ProductScreen()),
-      );
-    } else if (provider.productLoadingState == LoadingState.error) {
-      // Show error message if scan failed
+    try {
+      await provider.scanAndLoadProduct();
+      
+      if (provider.productLoadingState == LoadingState.success) {
+        // Navigate to product screen if scan was successful
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProductScreen()),
+        );
+      } else if (provider.productLoadingState == LoadingState.error) {
+        // Show error message if scan failed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.errorMessage),
+            duration: const Duration(seconds: 3),
+            action: provider.errorMessage.contains("permission") 
+              ? SnackBarAction(
+                  label: 'Settings',
+                  onPressed: () {
+                    // This would open app settings on a real implementation
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please open Settings and enable camera access')),
+                    );
+                  },
+                ) 
+              : null,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.errorMessage)),
+        SnackBar(content: Text('Error: ${e.toString()}')),
       );
     }
   }
