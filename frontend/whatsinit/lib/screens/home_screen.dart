@@ -142,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
             const Spacer(),
             Icon(
-              Icons.food_bank_outlined,
+              Icons.local_offer_outlined,
               size: 100,
               color: Theme.of(context).colorScheme.primary,
             ),

@@ -109,12 +109,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Spacer(flex: 2),
-          Icon(
-            Icons.health_and_safety_outlined,
-            size: 80,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 32),
           Text(
             "Hi 👋",
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
