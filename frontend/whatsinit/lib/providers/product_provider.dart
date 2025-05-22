@@ -51,6 +51,10 @@ class ProductProvider with ChangeNotifier {
   Future<void> scanAndLoadProduct() async {
     _setProductLoading();
     
+    // Reset the analysis result when starting a new scan
+    _analysisResult = null;
+    _analysisLoadingState = LoadingState.idle;
+    
     try {
       if (kDebugMode) {
         print("Attempting to scan barcode...");
@@ -87,6 +91,10 @@ class ProductProvider with ChangeNotifier {
     _setProductLoading();
     
     try {
+      // Reset the analysis result when loading a new product
+      _analysisResult = null;
+      _analysisLoadingState = LoadingState.idle;
+      
       final product = await _apiService.getProductByBarcode(barcode);
       _setProductLoaded(product);
     } catch (e) {
