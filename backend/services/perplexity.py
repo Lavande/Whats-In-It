@@ -241,7 +241,7 @@ class PerplexitySonarService:
                     safety_level=add.get("safety_level", "Unknown"),
                     description=add.get("description", "No description provided"),
                     potential_effects=add.get("potential_effects", "Unknown"),
-                    source=add.get("source", "Unknown")
+                    source=str(add.get("source", "Unknown"))  # Convert source to string to ensure proper type
                 )
                 additives.append(additive)
             
