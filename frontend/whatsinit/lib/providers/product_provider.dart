@@ -8,7 +8,7 @@ import '../services/barcode_service.dart';
 enum LoadingState { idle, loading, error, success }
 
 class ProductProvider with ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  ApiService _apiService = ApiService();
   final BarcodeService _barcodeService = BarcodeService();
   
   // State
@@ -31,6 +31,21 @@ class ProductProvider with ChangeNotifier {
   
   // Check if we can proceed to analysis (product must be loaded)
   bool get canAnalyze => _product != null;
+  
+  // Allow updating the API service with a new one that has found a working connection
+  void updateApiService(ApiService newService) {
+    _apiService = newService;
+    notifyListeners();
+  }
+  
+  // Update just the base URL
+  void updateApiBaseUrl(String newBaseUrl) {
+    // Create a new ApiService with the updated URL
+    final newApiService = ApiService();
+    newApiService.baseUrl = newBaseUrl;
+    _apiService = newApiService;
+    notifyListeners();
+  }
 
   // Scan barcode and load product information
   Future<void> scanAndLoadProduct() async {
