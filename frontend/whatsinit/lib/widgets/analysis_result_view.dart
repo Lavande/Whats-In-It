@@ -345,7 +345,20 @@ class AnalysisResultView extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: _buildClickableReferences(context, reason, Theme.of(context).textTheme.bodyLarge!),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildClickableReferences(
+                        context, 
+                        reason, 
+                        Theme.of(context).textTheme.bodyLarge!,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
