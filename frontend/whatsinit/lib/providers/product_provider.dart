@@ -187,4 +187,12 @@ class ProductProvider with ChangeNotifier {
     _productLoadingState = LoadingState.idle;
     notifyListeners();
   }
+  
+  // Cancel analysis
+  void cancelAnalysis() {
+    if (_analysisLoadingState == LoadingState.loading) {
+      _analysisLoadingState = LoadingState.idle;
+      notifyListeners();
+    }
+  }
 } 

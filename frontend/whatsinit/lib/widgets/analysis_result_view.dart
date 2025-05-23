@@ -220,18 +220,28 @@ class AnalysisResultView extends StatelessWidget {
     final nutritionItems = nutrition.entries.toList();
     final hasNutrition = nutritionItems.isNotEmpty;
     
-    // Primary nutrients to show by default (carbohydrates, fat, protein)
+    // Primary nutrients to show by default (only main categories of carbohydrates, fat, protein)
     final List<String> primaryNutrientKeywords = ['Carbohydrate', 'Carbs', 'Fat', 'Protein', 'Proteins'];
+    // Subcategories to always put in the secondary list
+    final List<String> secondaryNutrientKeywords = ['Saturated', 'Unsaturated', 'Trans'];
     
     // Split nutrition items into primary and secondary entries
     final List<MapEntry<String, dynamic>> primaryEntries = [];
     final List<MapEntry<String, dynamic>> secondaryEntries = [];
     
     for (var entry in nutritionItems) {
-      if (primaryNutrientKeywords.any((keyword) => 
-          entry.key.toLowerCase().contains(keyword.toLowerCase()))) {
+      final String key = entry.key.toLowerCase();
+      // Check if it's a subcategory that should always be in the secondary list
+      if (secondaryNutrientKeywords.any((keyword) => key.contains(keyword.toLowerCase()))) {
+        secondaryEntries.add(entry);
+      }
+      // Check if it's a main category that should be in the primary list
+      else if (primaryNutrientKeywords.any((keyword) => key == keyword.toLowerCase() || 
+          (key.contains(keyword.toLowerCase()) && !key.contains(' ')))) {
         primaryEntries.add(entry);
-      } else {
+      } 
+      // Everything else goes to secondary
+      else {
         secondaryEntries.add(entry);
       }
     }
@@ -240,7 +250,7 @@ class AnalysisResultView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Nutrition Analysis',
+          'Nutrition Facts',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -594,7 +604,7 @@ class AnalysisResultView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Information Sources',
+          'Sources',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),

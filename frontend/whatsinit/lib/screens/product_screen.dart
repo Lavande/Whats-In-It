@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/product_provider.dart';
 import '../widgets/analysis_result_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key}) : super(key: key);
@@ -140,34 +141,7 @@ class _ProductScreenState extends State<ProductScreen> {
 
   Widget _buildAnalysisSection(BuildContext context, ProductProvider provider) {
     if (provider.analysisLoadingState == LoadingState.loading) {
-      return Container(
-        padding: const EdgeInsets.all(32.0),
-        alignment: Alignment.center,
-        child: Column(
-          children: [
-            SpinKitFadingCircle(
-              color: Theme.of(context).colorScheme.primary,
-              size: 50.0,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Analyzing product...',
-              style: GoogleFonts.roboto(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'We are examining ingredients, additives, and nutritional information based on your preferences.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                color: Colors.grey[700],
-              ),
-            ),
-          ],
-        ),
-      );
+      return LoadingAnalysisView();
     } else if (provider.analysisLoadingState == LoadingState.error) {
       return Container(
         padding: const EdgeInsets.all(16.0),
@@ -245,5 +219,172 @@ class _ProductScreenState extends State<ProductScreen> {
     
     // Return a more generic message
     return 'Unable to analyze this product. Please try again later.';
+  }
+}
+
+class LoadingAnalysisView extends StatefulWidget {
+  const LoadingAnalysisView({Key? key}) : super(key: key);
+
+  @override
+  _LoadingAnalysisViewState createState() => _LoadingAnalysisViewState();
+}
+
+class _LoadingAnalysisViewState extends State<LoadingAnalysisView> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  int _seconds = 30; // Start from 30 seconds and count down
+  late Timer _timer;
+  int _messageIndex = 0;
+  double _progressValue = 0.0;
+  
+  // List of encouraging messages to show while loading
+  final List<String> _loadingMessages = [
+    'Analyzing ingredients and additives...',
+    'Checking nutritional information...',
+    'Comparing against your preferences...',
+    'Identifying potential allergens...',
+    'Evaluating nutritional value...',
+    'Analyzing for diet compatibility...',
+    'Almost there! Finalizing results...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Set up animation controller
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+    
+    // Timer to update seconds counter and messages
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _seconds--;
+        if (_seconds <= 0) {
+          _seconds = 0; // Prevent negative values
+        }
+        
+        // Change message every 4 seconds, cycling through the list
+        if (_timer.tick % 4 == 0) {
+          _messageIndex = (_messageIndex + 1) % _loadingMessages.length;
+        }
+        
+        // Update progress based on remaining time (30 to 0 seconds)
+        _progressValue = 1 - (_seconds / 30.0);
+        if (_progressValue > 1.0) _progressValue = 1.0;
+        if (_progressValue < 0.0) _progressValue = 0.0;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(32.0),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Use a more engaging animation from SpinKit
+          SpinKitFoldingCube(
+            color: Theme.of(context).colorScheme.primary,
+            size: 60.0,
+            controller: _controller,
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Current action message that changes
+          Text(
+            _loadingMessages[_messageIndex],
+            style: GoogleFonts.roboto(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Add progress indicator
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LinearProgressIndicator(
+                  value: _progressValue,
+                  backgroundColor: Colors.grey[200],
+                  color: Theme.of(context).colorScheme.primary,
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _seconds > 0 ? 'Estimated time: $_seconds seconds' : 'Analysis in progress...',
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Reassuring message - simplified
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'AI analysis in progress. This may take up to 30 seconds.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.roboto(
+                color: Colors.blue[800],
+                fontSize: 14,
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Cancel button
+          OutlinedButton.icon(
+            onPressed: () {
+              // Get the provider and cancel the analysis
+              final provider = Provider.of<ProductProvider>(context, listen: false);
+              provider.cancelAnalysis();
+            },
+            icon: const Icon(Icons.cancel_outlined),
+            label: const Text('Cancel'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red[700],
+              side: BorderSide(color: Colors.red[300]!),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Format seconds into mm:ss (not used in simplified version)
+  String _formatTime(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 } 
