@@ -27,6 +27,7 @@ class ProductProvider with ChangeNotifier {
   LoadingState get productLoadingState => _productLoadingState;
   LoadingState get analysisLoadingState => _analysisLoadingState;
   UserPreferences get userPreferences => _userPreferencesProvider.userPreferences;
+  ApiService get apiService => _apiService;
   
   // Check if we can proceed to analysis (product must be loaded)
   bool get canAnalyze => _product != null;
@@ -44,10 +45,8 @@ class ProductProvider with ChangeNotifier {
   
   // Update just the base URL
   void updateApiBaseUrl(String newBaseUrl) {
-    // Create a new ApiService with the updated URL
-    final newApiService = ApiService();
-    newApiService.baseUrl = newBaseUrl;
-    _apiService = newApiService;
+    // Directly update the existing ApiService instance instead of creating a new one
+    _apiService.setCustomBaseUrl(newBaseUrl);
     notifyListeners();
   }
 
