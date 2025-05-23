@@ -1,0 +1,130 @@
+{
+  "health_score": 38,
+  "recommendation": "not recommended",
+  "recommendation_reason": "This product is high in calories, fat, and salt, and contains multiple flavor enhancers (MSG, disodium guanylate, disodium inosinate), making it an unhealthy choice for regular consumption despite no specific allergy risks for the user[2][5][6].",
+  "nutrition_components": [
+    {
+      "name": "Energy",
+      "value": "535 kcal/100g",
+      "health_rating": "unhealthy",
+      "reason": "Very high in calories, which can contribute to weight gain if consumed in excess[2][5]."
+    },
+    {
+      "name": "Fat",
+      "value": "32.0 g/100g",
+      "health_rating": "unhealthy",
+      "reason": "High fat content, especially in a snack food, increases calorie density and may contribute to cardiovascular risk if consumed frequently[2][5]."
+    },
+    {
+      "name": "Saturated Fat",
+      "value": "2.5 g/100g",
+      "health_rating": "moderate",
+      "reason": "Moderate saturated fat; below some snack foods, but still should be limited for heart health[2][5]."
+    },
+    {
+      "name": "Carbohydrates",
+      "value": "56.0 g/100g",
+      "health_rating": "moderate",
+      "reason": "High in refined carbohydrates, which can spike blood sugar and provide little satiety[2][5]."
+    },
+    {
+      "name": "Sugars",
+      "value": "4.0 g/100g",
+      "health_rating": "moderate",
+      "reason": "Sugar content is moderate for a savory snack, but still adds to overall calorie load[2][5]."
+    },
+    {
+      "name": "Fiber",
+      "value": "2.1 g/100g",
+      "health_rating": "moderate",
+      "reason": "Low fiber content, which means less satiety and fewer digestive benefits[5]."
+    },
+    {
+      "name": "Proteins",
+      "value": "5.5 g/100g",
+      "health_rating": "moderate",
+      "reason": "Protein is present but not significant enough to make this a filling or nutritious snack[5]."
+    },
+    {
+      "name": "Salt",
+      "value": "2.0 g/100g",
+      "health_rating": "unhealthy",
+      "reason": "Very high salt content, exceeding recommended daily intake in a single serving, increasing risk of hypertension[2][5]."
+    },
+    {
+      "name": "Sodium",
+      "value": "0.8 g/100g",
+      "health_rating": "unhealthy",
+      "reason": "High sodium content, which can contribute to high blood pressure and cardiovascular disease[2][5]."
+    }
+  ],
+  "key_ingredients": [
+    {
+      "name": "Farine de maïs (Corn flour)",
+      "description": "Primary base ingredient, provides carbohydrates.",
+      "health_impact": "Refined corn flour is low in fiber and micronutrients, contributing mainly empty calories[5]."
+    },
+    {
+      "name": "Huile de tournesol (Sunflower oil)",
+      "description": "Vegetable oil used for frying and texture.",
+      "health_impact": "High in omega-6 fatty acids; excessive intake may promote inflammation if not balanced with omega-3s[5]."
+    },
+    {
+      "name": "Poudre de fromage (Cheese powder)",
+      "description": "Dehydrated cheese for flavor.",
+      "health_impact": "Adds saturated fat and sodium, increasing cardiovascular risk if consumed in excess[5]."
+    }
+  ],
+  "additives": [
+    {
+      "code": "E621",
+      "name": "Monosodium glutamate (MSG)",
+      "safety_level": "Safe",
+      "description": "Flavor enhancer used to intensify savory taste.",
+      "potential_effects": "Generally recognized as safe, but some individuals may report sensitivity (headaches, flushing); scientific evidence for widespread adverse effects is lacking[6].",
+      "source": "[6]"
+    },
+    {
+      "code": "E627",
+      "name": "Disodium guanylate",
+      "safety_level": "Caution",
+      "description": "Flavor enhancer often used with MSG.",
+      "potential_effects": "Safe for most, but should be avoided by people with gout or uric acid issues; enhances umami flavor[7].",
+      "source": "[7]"
+    },
+    {
+      "code": "E631",
+      "name": "Disodium inosinate",
+      "safety_level": "Caution",
+      "description": "Flavor enhancer, usually combined with MSG.",
+      "potential_effects": "Safe for most, but may cause issues for those sensitive to purines or with gout[7].",
+      "source": "[7]"
+    },
+    {
+      "code": "Paprika extract",
+      "name": "Paprika extract (colorant)",
+      "safety_level": "Safe",
+      "description": "Natural colorant derived from paprika.",
+      "potential_effects": "Generally recognized as safe; used for color[7].",
+      "source": "[7]"
+    }
+  ],
+  "sources": [
+    {
+      "title": "3D Bugles Goût Fromage - Bénénuts - fatsecret",
+      "url": "https://www.fatsecret.fr/calories-nutrition/b%C3%A9n%C3%A9nuts/3d-bugles-go%C3%BBt-fromage/100g"
+    },
+    {
+      "title": "Combien y a-t-il de calories dans 3D's Bugles, Goût Fromage - Fitatu",
+      "url": "https://www.fitatu.com/catalog/fr/3ds-bugles-gout-fromage-format-familial-benenuts-135-g--3221720"
+    },
+    {
+      "title": "MSG: What Are Its Potential Side Effects? - EatingWell",
+      "url": "https://www.eatingwell.com/article/283965/the-msg-myth-are-there-really-side-effects/"
+    },
+    {
+      "title": "What are e-numbers in foods, are they harmful? - Nexus Ingredient",
+      "url": "https://nexusingredient.com/what-are-e-numbers-in-foods-are-they-harmful/"
+    }
+  ]
+}

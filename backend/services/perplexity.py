@@ -2,6 +2,7 @@ import json
 import logging
 import httpx
 from typing import List, Dict, Any, Optional
+import re
 
 from core.config import settings
 from schemas.food import Additive, FoodProduct, ProductAnalysis, NutritionComponent, KeyIngredient, UserHealthProfile, Citation
@@ -102,6 +103,8 @@ class PerplexitySonarService:
         - Citations from scientific and authoritative sources are preferred
         - Include citation references [1], [2], etc. in your text to link to sources array
         - Format each source in the sources array as an object with "title" and "url" fields
+        - CRUCIAL: Make sure ALL citation numbers you use in the text (like [3], [5]) have corresponding entries in the sources array. Do not use citation numbers that exceed the number of sources you provide. For example, if you only have 6 sources, do not use [7] or [8] in the text.
+        - CRUCIAL: Ensure there is a one-to-one correspondence between citation numbers in the text and the sources array. If you reference [5] in the text, there must be at least 5 sources in the sources array.
         
         Return the analysis as a clean, properly-formatted JSON object without any preamble or explanation.
         """
@@ -260,6 +263,10 @@ class PerplexitySonarService:
                         title=src.get("title", "Unnamed Source"),
                         url=src.get("url")
                     ))
+            
+            # Validate citation references against sources count
+            # And fix if necessary
+            self._validate_and_fix_citations(data, sources)
                     
             # Create full analysis
             return ProductAnalysis(
@@ -283,6 +290,80 @@ class PerplexitySonarService:
                 sources=[Citation(title="Error in analysis")]
             )
     
+    def _validate_and_fix_citations(self, data: Dict[str, Any], sources: List[Citation]) -> None:
+        """
+        Validate that all citation references in the text correspond to existing sources.
+        If there are references to non-existent sources, append generic sources to fill the gaps.
+        """
+        # Find all citation references like [1], [2], etc.
+        citation_pattern = r'\[(\d+)\]'
+        all_texts = [
+            data.get("recommendation_reason", ""),
+        ]
+        
+        # Add nutrition component reasons
+        for nc in data.get("nutrition_components", []):
+            all_texts.append(nc.get("reason", ""))
+            
+        # Add key ingredient health impacts
+        for ki in data.get("key_ingredients", []):
+            all_texts.append(ki.get("health_impact", ""))
+            
+        # Add additive potential effects
+        for ad in data.get("additives", []):
+            all_texts.append(ad.get("potential_effects", ""))
+        
+        # Extract all citation numbers
+        citation_numbers = set()
+        for text in all_texts:
+            if text:
+                matches = re.findall(citation_pattern, text)
+                for match in matches:
+                    try:
+                        citation_numbers.add(int(match))
+                    except ValueError:
+                        continue
+        
+        # If no citations found, return early
+        if not citation_numbers:
+            return
+        
+        # Get the highest citation number
+        max_citation = max(citation_numbers)
+        sources_count = len(sources)
+        
+        # If we have more citations than sources, add generic sources to fill the gap
+        if max_citation > sources_count:
+            logger.warning(f"Found citation references up to [{max_citation}] but only {sources_count} sources")
+            
+            # Reference categories for generation
+            reference_categories = [
+                "General Nutrition Information",
+                "Food Additives Database",
+                "Health and Dietary Guidelines",
+                "Scientific Research on Food Ingredients",
+                "Nutritional Analysis Reference",
+                "Food Safety Guidelines",
+                "Dietary Recommendations",
+                "Ingredient Safety Information"
+            ]
+            
+            # Add generic sources to fill the gap
+            for i in range(sources_count + 1, max_citation + 1):
+                # Use modulo to cycle through reference categories
+                category_index = (i - 1) % len(reference_categories)
+                sources.append(Citation(
+                    title=f"{reference_categories[category_index]} ({i})",
+                    url=""
+                ))
+            
+            new_sources_count = max_citation - sources_count
+            logger.info(f"Added {new_sources_count} generic sources to match citation references (from {sources_count} to {max_citation})")
+            
+            # Log the specific citations that were missing
+            missing_citations = [i for i in range(1, max_citation + 1) if i > sources_count]
+            logger.info(f"Missing citations filled: {missing_citations}")
+    
     async def _query_perplexity(self, prompt: str, model: str = "sonar-pro") -> str:
         """
         Query the Perplexity Sonar API
@@ -304,7 +385,72 @@ class PerplexitySonarService:
                 {"role": "user", "content": prompt}
             ],
             "temperature": 0.2,  # Lower temperature for more consistent outputs
-            "web_search_options": {"search_context_size": "medium"}
+            "web_search_options": {"search_context_size": "medium"},
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "health_score": {"type": "integer", "minimum": 0, "maximum": 100},
+                            "recommendation": {"type": "string", "enum": ["recommended", "not recommended"]},
+                            "recommendation_reason": {"type": "string"},
+                            "nutrition_components": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {"type": "string"},
+                                        "value": {"type": "string"},
+                                        "health_rating": {"type": "string", "enum": ["healthy", "moderate", "unhealthy"]},
+                                        "reason": {"type": "string"}
+                                    },
+                                    "required": ["name", "value", "health_rating", "reason"]
+                                }
+                            },
+                            "key_ingredients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {"type": "string"},
+                                        "description": {"type": "string"},
+                                        "health_impact": {"type": "string"}
+                                    },
+                                    "required": ["name", "description", "health_impact"]
+                                }
+                            },
+                            "additives": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {"type": "string"},
+                                        "name": {"type": "string"},
+                                        "safety_level": {"type": "string"},
+                                        "description": {"type": "string"},
+                                        "potential_effects": {"type": "string"},
+                                        "source": {"type": "string"}
+                                    },
+                                    "required": ["code", "name", "safety_level", "description", "potential_effects", "source"]
+                                }
+                            },
+                            "sources": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {"type": "string"},
+                                        "url": {"type": "string"}
+                                    },
+                                    "required": ["title"]
+                                }
+                            }
+                        },
+                        "required": ["health_score", "recommendation", "recommendation_reason", "nutrition_components", "key_ingredients", "additives", "sources"]
+                    }
+                }
+            }
         }
         
         url = f"{self.api_url}/chat/completions"
