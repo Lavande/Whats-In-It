@@ -149,68 +149,77 @@ class AnalysisResultView extends StatelessWidget {
       emoji = '😕';
     }
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24.0), // Consistent with other section gaps
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2), // Softer shadow as per typical modern UI
-            spreadRadius: 1,
-            blurRadius: 4, // Elevation 2-4 range
-            offset: const Offset(0, 2), // Shadow position
+    // Get the screen width and calculate the appropriate card width
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 600; // Threshold for desktop/tablet vs mobile
+    
+    // For larger screens, use a centered layout with constrained width
+    // For mobile, maintain the current full-width layout
+    return Center(
+      child: Container(
+        width: isDesktop ? 500 : double.infinity, // Set max width on larger screens
+        margin: const EdgeInsets.only(bottom: 24.0), // Consistent with other section gaps
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center, // Center children horizontally
-        children: [
-          // Score Circle
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: circleBgColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2), // Softer shadow as per typical modern UI
+              spreadRadius: 1,
+              blurRadius: 4, // Elevation 2-4 range
+              offset: const Offset(0, 2), // Shadow position
             ),
-            child: Center(
-              child: Text(
-                '$overallScore',
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center, // Center children horizontally
+          children: [
+            // Score Circle
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: circleBgColor,
+              ),
+              child: Center(
+                child: Text(
+                  '$overallScore',
+                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          // Status Label with Emoji
-          Text(
-            '$emoji $statusText',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600, // semi-bold
-              color: labelColor,
+            // Status Label with Emoji
+            Text(
+              '$emoji $statusText',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600, // semi-bold
+                color: labelColor,
+              ),
             ),
-          ),
-          const SizedBox(height: 12), // Spacing before recommendation reason
+            const SizedBox(height: 12), // Spacing before recommendation reason
 
-          // Recommendation Reason
-          if (recommendationReason.isNotEmpty)
-            _buildClickableReferences(
-              context,
-              recommendationReason,
-              // Base style for the recommendation reason text
-              TextStyle(fontSize: 14, color: Colors.grey[800], height: 1.5),
-              textAlign: TextAlign.start, // Changed to left alignment (start)
-          ),
-        ],
+            // Recommendation Reason
+            if (recommendationReason.isNotEmpty)
+              _buildClickableReferences(
+                context,
+                recommendationReason,
+                // Base style for the recommendation reason text
+                TextStyle(fontSize: 14, color: Colors.grey[800], height: 1.5),
+                textAlign: TextAlign.center, // Center align text on all screen sizes
+            ),
+          ],
+        ),
       ),
     );
   }
