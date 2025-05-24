@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/product_provider.dart';
 import '../providers/user_preferences_provider.dart';
 import '../screens/product_screen.dart';
@@ -19,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isTestingConnection = false;
   String _connectionStatus = "";
   bool _showNetworkSettings = false;
+  bool _isLoadingProduct = false;
 
   @override
   void initState() {
@@ -39,183 +41,216 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("What's In It"),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.network_wifi),
-            onPressed: () {
-              setState(() {
-                _showNetworkSettings = !_showNetworkSettings;
-              });
-            },
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'reset_onboarding') {
-                _resetOnboarding();
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'reset_onboarding',
-                child: Text('Reset Onboarding'),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: const Text("What's In It"),
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.network_wifi),
+                onPressed: () {
+                  setState(() {
+                    _showNetworkSettings = !_showNetworkSettings;
+                  });
+                },
+              ),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'reset_onboarding') {
+                    _resetOnboarding();
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  const PopupMenuItem<String>(
+                    value: 'reset_onboarding',
+                    child: Text('Reset Onboarding'),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Network settings section
-            if (_showNetworkSettings) ...[
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Network Settings',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          body: Container(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Network settings section
+                if (_showNetworkSettings) ...[
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(height: 10),
-                    Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _ipController,
-                            decoration: const InputDecoration(
-                              labelText: 'Server Address',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                            ),
-                          ),
+                        const Text(
+                          'Network Settings',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        const SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: _setCustomIp,
-                          child: const Text('Use'),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _ipController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Server Address',
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                              onPressed: _setCustomIp,
+                              child: const Text('Use'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.secondary,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _useOnlineBackend,
+                                icon: const Icon(Icons.cloud),
+                                label: const Text('Use Online Backend'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _useLocalBackend,
+                                icon: const Icon(Icons.computer),
+                                label: const Text('Use Local Backend'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: _testConnection,
+                          icon: const Icon(Icons.network_check),
+                          label: const Text('Test Connection'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                             foregroundColor: Colors.white,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _useOnlineBackend,
-                            icon: const Icon(Icons.cloud),
-                            label: const Text('Use Online Backend'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,
+                        if (_isTestingConnection)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: LinearProgressIndicator(),
+                          ),
+                        if (_connectionStatus.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              'Connection Status: $_connectionStatus',
+                              style: TextStyle(
+                                color: _connectionStatus.contains("SUCCESS") || _connectionStatus.contains("http")
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _useLocalBackend,
-                            icon: const Icon(Icons.computer),
-                            label: const Text('Use Local Backend'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: _testConnection,
-                      icon: const Icon(Icons.network_check),
-                      label: const Text('Test Connection'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                    if (_isTestingConnection)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: LinearProgressIndicator(),
-                      ),
-                    if (_connectionStatus.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Text(
-                          'Connection Status: $_connectionStatus',
-                          style: TextStyle(
-                            color: _connectionStatus.contains("SUCCESS") || _connectionStatus.contains("http")
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                const Spacer(),
+                Icon(
+                  Icons.local_offer_outlined,
+                  size: 100,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
-            const Spacer(),
-            Icon(
-              Icons.local_offer_outlined,
-              size: 100,
-              color: Theme.of(context).colorScheme.primary,
+                const SizedBox(height: 30),
+                Text(
+                  'Scan a product to analyze its ingredients',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 50),
+                ElevatedButton.icon(
+                  onPressed: () => _scanBarcode(context),
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text('Scan Barcode'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text('OR', textAlign: TextAlign.center),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _barcodeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter barcode manually',
+                    border: OutlineInputBorder(),
+                    suffixIcon: Icon(Icons.numbers),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 10),
+                TextButton(
+                  onPressed: () => _submitBarcode(context),
+                  child: const Text('Submit Barcode'),
+                ),
+                const Spacer(),
+              ],
             ),
-            const SizedBox(height: 30),
-            Text(
-              'Scan a product to analyze its ingredients',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 50),
-            ElevatedButton.icon(
-              onPressed: () => _scanBarcode(context),
-              icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Scan Barcode'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text('OR', textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _barcodeController,
-              decoration: const InputDecoration(
-                labelText: 'Enter barcode manually',
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.numbers),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () => _submitBarcode(context),
-              child: const Text('Submit Barcode'),
-            ),
-            const Spacer(),
-          ],
+          ),
         ),
-      ),
+        // Loading overlay
+        if (_isLoadingProduct)
+          Container(
+            color: Colors.black54,
+            width: double.infinity,
+            height: double.infinity,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SpinKitFadingCircle(
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 50.0,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Loading product information...',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      decoration: TextDecoration.none,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -304,7 +339,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = Provider.of<ProductProvider>(context, listen: false);
     
     try {
+      // Start loading animation
+      setState(() {
+        _isLoadingProduct = true;
+      });
+      
       await provider.scanAndLoadProduct();
+      
+      // Stop loading animation
+      setState(() {
+        _isLoadingProduct = false;
+      });
       
       if (provider.productLoadingState == LoadingState.success) {
         // Navigate to product screen if scan was successful
@@ -333,6 +378,11 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     } catch (e) {
+      // Stop loading animation on error
+      setState(() {
+        _isLoadingProduct = false;
+      });
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
@@ -348,7 +398,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final provider = Provider.of<ProductProvider>(context, listen: false);
+    
+    // Start loading animation
+    setState(() {
+      _isLoadingProduct = true;
+    });
+    
     await provider.loadProductByBarcode(_barcodeController.text);
+    
+    // Stop loading animation
+    setState(() {
+      _isLoadingProduct = false;
+    });
     
     if (provider.productLoadingState == LoadingState.success) {
       // Navigate to product screen if load was successful
