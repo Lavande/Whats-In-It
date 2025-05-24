@@ -52,6 +52,4 @@ The app is currently configured to connect to `http://10.0.2.2:8000` which is th
 
 ## Development Notes
 
-- User preferences are currently mocked in `lib/models/user_preferences.dart`
-- In a real app, these would be stored in local storage or user accounts
-- Error handling is implemented but could be enhanced for edge cases 
+- Only iOS and Web versinos have been tested
