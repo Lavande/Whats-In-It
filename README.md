@@ -1,7 +1,7 @@
 # What's In It
 
 <div align="center">
-  <img src="https://github.com/lavande/Whats-In-It/assets/YOUR_ASSET_ID/logo.png" alt="What's In It Logo" width="200"/>
+  <img src="frontend/whatsinit/assets/icon/app_icon.png" alt="What's In It Logo" width="200"/>
   <p><strong>Know what's in your food - Smart food product analyzer</strong></p>
   
   [![Try the Web App](https://img.shields.io/badge/Try_Web_App-Live_Demo-blue?style=for-the-badge)](https://whats-in-it-frontend-q0ygu1174-lavandes-projects.vercel.app/)
@@ -133,4 +133,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🙏 Acknowledgements
 
 - [OpenFoodFacts](https://world.openfoodfacts.org/) for their extensive food database
-- [Perplexity Sonar API](https://perplexity.ai/) for AI-powered food additive analysis 
+- [Perplexity Sonar API](https://perplexity.ai/) for AI-powered analysis with sources
