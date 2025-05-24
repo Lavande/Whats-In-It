@@ -26,6 +26,41 @@ You can try the web version of the application at:
 - 🥗 **Dietary Preferences**: Personalized food analysis based on your diet
 - ⚠️ **Allergen Detection**: Identify potential allergens in food products
 
+## 📸 Screenshots
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="screenshots/main_screen.png" alt="Main Screen" width="220"/><br/>
+        <em>Main Screen</em>
+      </td>
+      <td align="center">
+        <img src="screenshots/settings_1.png" alt="Settings Screen 1" width="220"/><br/>
+        <em>Settings Screen 1</em>
+      </td>
+      <td align="center">
+        <img src="screenshots/settings_2.png" alt="Settings Screen 2" width="220"/><br/>
+        <em>Settings Screen 2</em>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="screenshots/result_1.png" alt="Result Screen 1" width="220"/><br/>
+        <em>Analysis Result 1</em>
+      </td>
+      <td align="center">
+        <img src="screenshots/result_2.png" alt="Result Screen 2" width="220"/><br/>
+        <em>Analysis Result 2</em>
+      </td>
+      <td align="center">
+        <img src="screenshots/result_3.png" alt="Result Screen 3" width="220"/><br/>
+        <em>Analysis Result 3</em>
+      </td>
+    </tr>
+  </table>
+</div>
+
 ## 🏗️ Project Structure
 
 The project consists of two main components:
