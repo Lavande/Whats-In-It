@@ -16,7 +16,7 @@
 ## 🚀 Try It Out
 
 You can try the web version of the application at:
-[https://whats-in-it-frontend.vercel.app/](https://whats-in-it-frontend-q0ygu1174-lavandes-projects.vercel.app/)
+[https://whats-in-it-frontend.vercel.app/](https://whats-in-it-frontend.vercel.app/)
 
 ## ✨ Features
 
