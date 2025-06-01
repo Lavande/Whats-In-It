@@ -18,7 +18,12 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="What's In It - Product Analysis App">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Camera permissions for mobile_scanner -->
+  <meta name="permissions" content="camera">
+  <meta name="permission-delegations" content="camera">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -29,8 +34,48 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>whatsinit</title>
+  <title>What's In It</title>
   <link rel="manifest" href="manifest.json">
+  
+  <script>
+    // Debug camera permissions
+    function checkCameraPermissions() {
+      console.log('Checking camera permissions...');
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('getUserMedia is not supported in this browser');
+        return;
+      }
+      
+      // Check current permission state
+      navigator.permissions.query({name: 'camera'}).then(function(result) {
+        console.log('Camera permission state:', result.state);
+        if (result.state === 'denied') {
+          alert('Camera permission is denied. Please enable camera access in browser settings.');
+        }
+      }).catch(function(err) {
+        console.log('Permission query failed:', err);
+      });
+      
+      // Test camera access
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          console.log('Camera access successful');
+          // Stop the test stream
+          stream.getTracks().forEach(track => track.stop());
+        })
+        .catch(function(err) {
+          console.error('Camera access failed:', err);
+          alert('Camera access failed: ' + err.message + '\n\nPlease check:\n1. Camera permissions in browser\n2. Camera is not being used by other apps\n3. Try refreshing the page');
+        });
+    }
+    
+    // Run check when page loads
+    window.addEventListener('load', function() {
+      setTimeout(checkCameraPermissions, 1000);
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

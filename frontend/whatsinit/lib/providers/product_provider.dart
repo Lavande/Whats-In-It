@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../models/analysis_result.dart';
 import '../models/user_preferences.dart';
@@ -51,7 +52,7 @@ class ProductProvider with ChangeNotifier {
   }
 
   // Scan barcode and load product information
-  Future<void> scanAndLoadProduct() async {
+  Future<void> scanAndLoadProduct(BuildContext context) async {
     _setProductLoading();
     
     // Reset the analysis result when starting a new scan
@@ -63,7 +64,7 @@ class ProductProvider with ChangeNotifier {
         print("Attempting to scan barcode...");
       }
       
-      final barcode = await _barcodeService.scanBarcode();
+      final barcode = await _barcodeService.scanBarcode(context);
       
       if (barcode == null) {
         // User cancelled the scan

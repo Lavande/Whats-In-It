@@ -108,11 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(width: 10),
                             ElevatedButton(
                               onPressed: _setCustomIp,
-                              child: const Text('Use'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).colorScheme.secondary,
                                 foregroundColor: Colors.white,
                               ),
+                              child: const Text('Use'),
                             ),
                           ],
                         ),
@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     size: 50.0,
                   ),
                   const SizedBox(height: 20),
-                  Text(
+                  const Text(
                     'Loading product information...',
                     style: TextStyle(
                       color: Colors.white,
@@ -344,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoadingProduct = true;
       });
       
-      await provider.scanAndLoadProduct();
+      await provider.scanAndLoadProduct(context);
       
       // Stop loading animation
       setState(() {

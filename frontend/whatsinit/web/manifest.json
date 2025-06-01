@@ -1,13 +1,14 @@
 {
-    "name": "whatsinit",
-    "short_name": "whatsinit",
+    "name": "What's In It",
+    "short_name": "What's In It",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Product Analysis App with Barcode Scanning",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "permissions": ["camera"],
     "icons": [
         {
             "src": "icons/Icon-192.png",

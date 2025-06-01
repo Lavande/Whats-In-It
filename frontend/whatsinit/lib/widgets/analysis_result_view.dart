@@ -82,7 +82,7 @@ class AnalysisResultView extends StatelessWidget {
       final citation = text.substring(match.start, match.end);
       spans.add(TextSpan(
         text: citation,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.blue, // Link color
           fontWeight: FontWeight.bold,
           decoration: TextDecoration.underline, // Optional: add underline to links
@@ -484,7 +484,7 @@ class AnalysisResultView extends StatelessWidget {
               );
             } else {
               return ListTile(
-                leading: Icon(Icons.circle, color: Colors.grey),
+                leading: const Icon(Icons.circle, color: Colors.grey),
                 title: Text(name)
               );
             }
@@ -568,7 +568,7 @@ class AnalysisResultView extends StatelessWidget {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.science, color: Colors.green, size: 20), // Green flask icon
+                                  const Icon(Icons.science, color: Colors.green, size: 20), // Green flask icon
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -605,7 +605,7 @@ class AnalysisResultView extends StatelessWidget {
             } else {
               // Fallback for unexpected data format
               return ListTile(
-                leading: Icon(Icons.circle, color: Colors.grey),
+                leading: const Icon(Icons.circle, color: Colors.grey),
                 title: Text(name),
                 subtitle: Text(data.toString()),
               );
@@ -665,7 +665,7 @@ class AnalysisResultView extends StatelessWidget {
                                 padding: const EdgeInsets.only(left: 4.0), // Small space before icon
                                 child: InkWell(
                                   onTap: () => _launchUrl(url),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.open_in_new,
                                     size: 16, // Smaller icon
                                     color: Colors.blue,

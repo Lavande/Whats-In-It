@@ -141,7 +141,7 @@ class _ProductScreenState extends State<ProductScreen> {
 
   Widget _buildAnalysisSection(BuildContext context, ProductProvider provider) {
     if (provider.analysisLoadingState == LoadingState.loading) {
-      return LoadingAnalysisView();
+      return const LoadingAnalysisView();
     } else if (provider.analysisLoadingState == LoadingState.error) {
       return Container(
         padding: const EdgeInsets.all(16.0),
