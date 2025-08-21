@@ -24,7 +24,7 @@ interface Analysis {
   // Add other fields from ProductAnalysis schema as needed
 }
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+const backendUrl = "https://api.whats-in-it.org";
 
 import { useHistory } from '@/context/HistoryContext';
 
@@ -43,7 +43,7 @@ export default function ProductView({ barcode }: { barcode: string }) {
       // Step 1: Fetch product data
       try {
         setLoadingState('product');
-        const productRes = await fetch(`${backendUrl}/api/product/${barcode}`);
+        const productRes = await fetch(`${backendUrl}/api/v1/product/${barcode}`);
         if (!productRes.ok) {
           throw new Error(`Product not found (status: ${productRes.status})`);
         }
@@ -54,7 +54,7 @@ export default function ProductView({ barcode }: { barcode: string }) {
         // Once product data is fetched, proceed to analysis
         if (!prefsLoading) {
             setLoadingState('analysis');
-            const analysisRes = await fetch(`${backendUrl}/api/analyze-comprehensive`, {
+            const analysisRes = await fetch(`${backendUrl}/api/v1/analyze-comprehensive`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ product: productData, user_preferences: preferences }),

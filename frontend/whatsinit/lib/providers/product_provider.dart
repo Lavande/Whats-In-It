@@ -44,12 +44,6 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
   }
   
-  // Update just the base URL
-  void updateApiBaseUrl(String newBaseUrl) {
-    // Directly update the existing ApiService instance instead of creating a new one
-    _apiService.setCustomBaseUrl(newBaseUrl);
-    notifyListeners();
-  }
 
   // Scan barcode and load product information
   Future<void> scanAndLoadProduct(BuildContext context) async {
