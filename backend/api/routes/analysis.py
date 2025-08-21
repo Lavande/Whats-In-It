@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Body, Path, Query
 from typing import List, Dict, Any
 import logging
 
-from schemas.food import FoodProduct, ProductAnalysis, UserHealthProfile
+from schemas.food import FoodProduct, ProductAnalysis, UserHealthProfile, ComprehensiveAnalysisRequest
 from services.perplexity import perplexity_service
 
 router = APIRouter()
@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/analyze-comprehensive", response_model=ProductAnalysis)
 async def analyze_comprehensive(
-    product: FoodProduct = Body(..., description="Food product information from barcode scan"),
-    user_preferences: UserHealthProfile = Body(..., description="User health preferences and conditions")
+    request: ComprehensiveAnalysisRequest = Body(..., description="Product and user preferences for analysis")
 ):
     """
     Provide comprehensive analysis of a product based on user preferences
@@ -30,14 +29,14 @@ async def analyze_comprehensive(
     - Product data (as returned by the barcode scan endpoint)
     - User health profile with diet types, allergies, and health conditions
     """
-    if not product:
+    if not request.product:
         raise HTTPException(status_code=400, detail="Product information required")
     
-    if not product.ingredients_text and not product.ingredients_list:
+    if not request.product.ingredients_text and not request.product.ingredients_list:
         raise HTTPException(status_code=400, detail="Product ingredients required for analysis")
     
     try:
-        analysis = await perplexity_service.analyze_comprehensive(product, user_preferences)
+        analysis = await perplexity_service.analyze_comprehensive(request.product, request.user_preferences)
         return analysis
     except Exception as e:
         logger.error(f"Error in comprehensive analysis endpoint: {str(e)}")

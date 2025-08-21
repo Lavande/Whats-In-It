@@ -49,7 +49,7 @@ class PerplexitySonarService:
             )
         
         # Format user preferences
-        diet_types = ", ".join(user_preferences.diet_type or ["balanced"])
+        diet_types = ", ".join(user_preferences.get_diet_types() or ["balanced"])
         allergies = ", ".join(user_preferences.allergies or [])
         health_conditions = ", ".join(user_preferences.health_conditions or [])
         

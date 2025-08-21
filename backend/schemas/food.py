@@ -49,9 +49,19 @@ class KeyIngredient(BaseModel):
     
     
 class UserHealthProfile(BaseModel):
-    diet_type: Optional[List[str]] = []  # keto, vegan, low-carb, etc.
+    # Support both frontend formats
+    diet_type: Optional[List[str]] = []  # For Flutter app compatibility
+    diet_types: Optional[List[str]] = []  # For web app compatibility
     allergies: Optional[List[str]] = []
     health_conditions: Optional[List[str]] = []
+    avoid_ingredients: Optional[List[str]] = []  # For Flutter app
+    health_concerns: Optional[dict] = {}  # For Flutter app
+    
+    def get_diet_types(self) -> List[str]:
+        """Get diet types from either field"""
+        if self.diet_types:
+            return self.diet_types
+        return self.diet_type or []
 
 
 class Citation(BaseModel):
@@ -67,4 +77,10 @@ class ProductAnalysis(BaseModel):
     nutrition_components: List[NutritionComponent] = []
     key_ingredients: List[KeyIngredient] = []
     additives: List[Additive] = []
-    sources: Optional[List[Citation]] = None  # Structured source references 
+    sources: Optional[List[Citation]] = None  # Structured source references
+
+
+class ComprehensiveAnalysisRequest(BaseModel):
+    """Request model for comprehensive analysis matching frontend format"""
+    product: FoodProduct
+    user_preferences: UserHealthProfile 

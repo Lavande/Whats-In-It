@@ -27,8 +27,14 @@ app.include_router(analysis.router, prefix="/api/v1", tags=["analysis"])
 async def root():
     return {
         "message": "Welcome to What's In It API",
-        "docs": "/docs"
+        "docs": "/docs",
+        "status": "healthy"
     }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for load balancers"""
+    return {"status": "healthy", "service": "What's In It API"}
 
 if __name__ == "__main__":
     import uvicorn
