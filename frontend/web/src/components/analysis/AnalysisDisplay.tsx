@@ -139,7 +139,7 @@ export default function AnalysisDisplay() {
           </div>
           <div className="flex items-center space-x-2 text-sm text-[var(--text-secondary)]">
             <TrendingUp className="w-4 h-4" />
-            <span>Powered by AI</span>
+            <span>Powered by Perplexity</span>
           </div>
         </div>
 
