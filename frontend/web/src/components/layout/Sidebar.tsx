@@ -10,7 +10,6 @@ import {
   Settings, 
   Menu, 
   X, 
-  Leaf, 
   RefreshCw,
   User
 } from "lucide-react";
@@ -62,8 +61,12 @@ const Sidebar = () => {
         {/* Header */}
         <div className="p-6 border-b border-[var(--surface-variant)]">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden">
+              <img 
+                src="/logo-32x32.png" 
+                alt="What's In It Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <h1 className="text-xl font-bold text-[var(--text-primary)]">
               What's In It?

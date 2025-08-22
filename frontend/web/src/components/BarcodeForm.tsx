@@ -136,7 +136,7 @@ const BarcodeForm = () => {
       {!hasError && (
         <div className="mt-4 text-sm text-[var(--text-secondary)] space-y-1">
           <p>💡 Look for the barcode on the product packaging</p>
-          <p>📱 Barcodes are typically 8-14 digits long</p>
+          <p>💡 Barcodes are typically 8-14 digits long</p>
         </div>
       )}
 
