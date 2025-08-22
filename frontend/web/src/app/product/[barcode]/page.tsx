@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Head from "next/head";
 import { 
   ArrowLeft, 
   Package, 
@@ -252,7 +253,13 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <>
+      <Head>
+        <link rel="canonical" href={`https://whats-in-it.org/product/${barcode}`} />
+        <title>{currentProduct ? `${currentProduct.name} - Nutrition Analysis | What's In It?` : `Product ${barcode} - Analysis | What's In It?`}</title>
+        <meta name="description" content={currentProduct ? `Complete nutrition analysis for ${currentProduct.name}. View ingredients, nutrition facts, health scores, and AI-powered insights.` : `Comprehensive nutrition analysis and ingredient breakdown for product ${barcode}.`} />
+      </Head>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" onClick={handleBack}>
@@ -302,6 +309,7 @@ export default function ProductPage() {
 
       {/* Analysis Section */}
       <AnalysisDisplay />
-    </div>
+      </div>
+    </>
   );
 }

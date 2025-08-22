@@ -4,7 +4,7 @@
   <img src="frontend/whatsinit/assets/icon/app_icon.png" alt="What's In It Logo" width="200"/>
   <p><strong>Know what's in your food - Smart food product analyzer</strong></p>
   
-  [![Try the Web App](https://img.shields.io/badge/Try_Web_App-Live_Demo-blue?style=for-the-badge)](https://whats-in-it-frontend.vercel.app/)
+  [![Try the Web App](https://img.shields.io/badge/Try_Web_App-Live_Demo-blue?style=for-the-badge)](https://whats-in-it.org/)
   [![iOS](https://img.shields.io/badge/Platform-iOS_Tested-lightgray?style=for-the-badge&logo=apple)](https://github.com/lavande/Whats-In-It)
   [![Flutter](https://img.shields.io/badge/Built_with-Flutter-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 </div>
@@ -16,7 +16,7 @@
 ## 🚀 Try It Out
 
 You can try the web version of the application at:
-[https://whats-in-it-frontend.vercel.app/](https://whats-in-it-frontend.vercel.app/)
+[https://whats-in-it.org/](https://whats-in-it.org/)
 
 ## ✨ Features
 

@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /api/
+
+# Allow search engines to access main pages
+Allow: /
+Allow: /history
+Allow: /settings
+Allow: /product/
+
+# Sitemap location
+Sitemap: https://whats-in-it.org/sitemap.xml
+
+# Crawl delay (optional - helps with server load)
+Crawl-delay: 1

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Head from "next/head";
 import { Clock, Package, Trash2, Search } from "lucide-react";
 import { useAppStore } from "@/store/appStore";
 import Button from "@/components/ui/Button";
@@ -32,7 +33,13 @@ export default function HistoryPage() {
 
   if (scanHistory.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <>
+        <Head>
+          <link rel="canonical" href="https://whats-in-it.org/history" />
+          <title>Scan History - Food Analysis History | What's In It?</title>
+          <meta name="description" content="View your food scan history and previous nutrition analyses. Track your food choices and revisit health insights." />
+        </Head>
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
             Scan History
@@ -55,12 +62,19 @@ export default function HistoryPage() {
             </Button>
           </div>
         </Card>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <>
+      <Head>
+        <link rel="canonical" href="https://whats-in-it.org/history" />
+        <title>Scan History - Food Analysis History | What's In It?</title>
+        <meta name="description" content="View your food scan history and previous nutrition analyses. Track your food choices and revisit health insights." />
+      </Head>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
@@ -149,6 +163,7 @@ export default function HistoryPage() {
           </p>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

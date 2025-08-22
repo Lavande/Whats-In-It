@@ -1,12 +1,19 @@
 "use client";
 
+import Head from "next/head";
 import BarcodeForm from "@/components/BarcodeForm";
 import Card from "@/components/ui/Card";
 import { Search, Heart, Shield } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="space-y-20">
+    <>
+      <Head>
+        <link rel="canonical" href="https://whats-in-it.org/" />
+        <title>What's In It? - Food Analyzer & Nutrition Scanner | AI-Powered Health Insights</title>
+        <meta name="description" content="Scan food barcodes instantly for comprehensive nutrition analysis, ingredient safety checks, and health scores. Get AI-powered insights into food additives, allergens, and nutritional content to make healthier choices." />
+      </Head>
+      <div className="space-y-20">
       {/* Hero Section */}
       <section className="text-center pt-12 pb-2">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-6 tracking-tight text-[var(--text-primary)] max-w-4xl mx-auto leading-tight">
@@ -135,6 +142,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
