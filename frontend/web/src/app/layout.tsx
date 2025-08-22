@@ -20,10 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-800 text-white`}>
+      <body className={`${inter.className}`}>
         <UserPreferencesProvider>
           <HistoryProvider>
-            <div className="flex">
+            <div className="flex min-h-screen bg-[var(--background)] text-[var(--foreground)]">
               <Sidebar />
               <main className="flex-1 md:ml-64 p-8">
                 {children}

@@ -1,15 +1,11 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useAppStore } from '@/store/appStore';
+import { UserPreferences } from '@/types';
 
-// Based on schemas/food.py -> UserHealthProfile
-interface UserPreferences {
-  diet_types: string[];
-  allergies: string[];
-  health_conditions: string[];
-}
-
+// Legacy context wrapper for compatibility
 interface UserPreferencesContextType {
   preferences: UserPreferences;
   setPreferences: (prefs: UserPreferences) => void;
@@ -18,40 +14,18 @@ interface UserPreferencesContextType {
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
 
-const defaultPreferences: UserPreferences = {
-    diet_types: [],
-    allergies: [],
-    health_conditions: [],
-};
-
 export const UserPreferencesProvider = ({ children }: { children: ReactNode }) => {
-  const [preferences, setPreferencesState] = useState<UserPreferences>(defaultPreferences);
-  const [isLoading, setIsLoading] = useState(true);
+  const preferences = useAppStore((state) => state.userPreferences);
+  const setUserPreferences = useAppStore((state) => state.setUserPreferences);
 
-  useEffect(() => {
-    try {
-      const storedPrefs = localStorage.getItem('userPreferences');
-      if (storedPrefs) {
-        setPreferencesState(JSON.parse(storedPrefs));
-      }
-    } catch (error) {
-      console.error("Failed to parse user preferences from localStorage", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const setPreferences = (newPrefs: UserPreferences) => {
-    setPreferencesState(newPrefs);
-    try {
-      localStorage.setItem('userPreferences', JSON.stringify(newPrefs));
-    } catch (error) {
-      console.error("Failed to save user preferences to localStorage", error);
-    }
+  const contextValue: UserPreferencesContextType = {
+    preferences,
+    setPreferences: setUserPreferences,
+    isLoading: false, // Zustand persist handles loading automatically
   };
 
   return (
-    <UserPreferencesContext.Provider value={{ preferences, setPreferences, isLoading }}>
+    <UserPreferencesContext.Provider value={contextValue}>
       {children}
     </UserPreferencesContext.Provider>
   );

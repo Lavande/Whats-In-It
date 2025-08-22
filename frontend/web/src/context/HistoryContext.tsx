@@ -1,8 +1,11 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useAppStore } from '@/store/appStore';
+import { Product, ScanHistoryItem } from '@/types';
 
+// Legacy interface for compatibility
 interface HistoryItem {
   barcode: string;
   productName: string;
@@ -16,54 +19,26 @@ interface HistoryContextType {
   isLoading: boolean;
 }
 
-// This is a simplified Product type for history purposes
-interface Product {
-    barcode: string;
-    name: string;
-    image_url?: string;
-}
-
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 
 export const HistoryProvider = ({ children }: { children: ReactNode }) => {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const scanHistory = useAppStore((state) => state.scanHistory);
+  const addToScanHistory = useAppStore((state) => state.addToScanHistory);
 
-  useEffect(() => {
-    try {
-      const storedHistory = localStorage.getItem('scanHistory');
-      if (storedHistory) {
-        setHistory(JSON.parse(storedHistory));
-      }
-    } catch (error) {
-      console.error("Failed to parse history from localStorage", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // Convert ScanHistoryItem to legacy HistoryItem format
+  const history: HistoryItem[] = scanHistory.map((item) => ({
+    barcode: item.barcode,
+    productName: item.product.name,
+    date: item.scannedAt.toISOString(),
+    imageUrl: item.product.image_url,
+  }));
 
   const addHistoryItem = (product: Product) => {
-    const newItem: HistoryItem = {
-        barcode: product.barcode,
-        productName: product.name,
-        date: new Date().toISOString(),
-        imageUrl: product.image_url,
-    };
-
-    const newHistory = [newItem, ...history.filter(item => item.barcode !== product.barcode)];
-    // Limit history to 50 items
-    const limitedHistory = newHistory.slice(0, 50);
-
-    setHistory(limitedHistory);
-    try {
-      localStorage.setItem('scanHistory', JSON.stringify(limitedHistory));
-    } catch (error) {
-      console.error("Failed to save history to localStorage", error);
-    }
+    addToScanHistory({ barcode: product.barcode, product });
   };
 
   return (
-    <HistoryContext.Provider value={{ history, addHistoryItem, isLoading }}>
+    <HistoryContext.Provider value={{ history, addHistoryItem, isLoading: false }}>
       {children}
     </HistoryContext.Provider>
   );
