@@ -9,11 +9,15 @@ export const metadata: Metadata = {
   title: "What's In It? - Food Analyzer & Nutrition Scanner | AI-Powered Health Insights",
   description: "Scan food barcodes instantly for comprehensive nutrition analysis, ingredient safety checks, and health scores. Get AI-powered insights into food additives, allergens, and nutritional content to make healthier choices.",
   keywords: "food analyzer, barcode scanner, nutrition analysis, food health checker, ingredient scanner, food safety, nutrition facts, AI food analysis, healthy eating, food additives checker",
+  alternates: {
+    canonical: "https://whats-in-it.org/",
+  },
   openGraph: {
     title: "What's In It? - Smart Food Analysis Tool",
     description: "Scan any food barcode to get instant nutrition analysis, health scores, and ingredient safety information powered by AI.",
     type: "website",
     locale: "en_US",
+    url: "https://whats-in-it.org/",
   },
   twitter: {
     card: "summary_large_image",
@@ -47,7 +51,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="canonical" href="https://whats-in-it.org" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />

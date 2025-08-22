@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Head from "next/head";
 import { 
   User, 
   Heart, 
@@ -82,13 +81,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <>
-      <Head>
-        <link rel="canonical" href="https://whats-in-it.org/settings" />
-        <title>Settings & Preferences - Customize Your Food Analysis | What's In It?</title>
-        <meta name="description" content="Customize your food analysis preferences. Set diet type, allergies, health focus areas, and personalize your nutrition insights." />
-      </Head>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-3">
           <User className="w-8 h-8 text-[var(--primary)]" />
@@ -398,6 +391,6 @@ export default function SettingsPage() {
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
