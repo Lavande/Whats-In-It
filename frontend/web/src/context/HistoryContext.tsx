@@ -29,7 +29,7 @@ export const HistoryProvider = ({ children }: { children: ReactNode }) => {
   const history: HistoryItem[] = scanHistory.map((item) => ({
     barcode: item.barcode,
     productName: item.product.name,
-    date: item.scannedAt.toISOString(),
+    date: item.scannedAt instanceof Date ? item.scannedAt.toISOString() : new Date(item.scannedAt).toISOString(),
     imageUrl: item.product.image_url,
   }));
 

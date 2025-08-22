@@ -140,24 +140,20 @@ const BarcodeForm = () => {
         </div>
       )}
 
-      {/* Quick test button for development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-6 pt-4 border-t border-[var(--surface-variant)]">
-          <p className="text-xs text-[var(--text-secondary)] mb-2">Development Testing:</p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setBarcode("3168930007197");
-              setLocalError("");
-              clearError();
-            }}
-            disabled={isLoading}
+      {/* Mobile app note */}
+      <div className="mt-6 pt-4 border-t border-[var(--surface-variant)]">
+        <p className="text-sm text-[var(--text-secondary)] text-center">
+          📱 Want to scan barcodes with your camera?{" "}
+          <a 
+            href="https://github.com/Lavande/Whats-In-It" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[var(--primary)] hover:text-[var(--primary-dark)] underline transition-colors"
           >
-            Use Test Barcode
-          </Button>
-        </div>
-      )}
+            Try our mobile app version
+          </a>
+        </p>
+      </div>
     </div>
   );
 };
