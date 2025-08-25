@@ -28,10 +28,12 @@ const Sidebar = () => {
     { href: "/settings", label: "Settings", icon: Settings },
   ];
 
-  const handleResetOnboarding = () => {
-    resetOnboarding();
-    router.push('/onboarding');
-    setIsOpen(false);
+  const handleResetPreferences = () => {
+    if (window.confirm('This will reset all your preferences. Are you sure?')) {
+      resetOnboarding();
+      router.push('/settings');
+      setIsOpen(false);
+    }
   };
 
   const handleItemClick = () => {
@@ -120,7 +122,7 @@ const Sidebar = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={handleResetOnboarding}
+            onClick={handleResetPreferences}
             className="w-full flex items-center justify-center space-x-2"
           >
             <RefreshCw className="w-4 h-4" />
